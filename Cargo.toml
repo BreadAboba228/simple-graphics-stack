@@ -1,0 +1,13 @@
+[package]
+name = "simple-render-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[features]
+default = ["cpu"]
+cpu = []
+vulcan = []
+directx = []
+metal = []
