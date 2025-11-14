@@ -1,0 +1,7 @@
+[package]
+name = "graph-builder-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+simple-render-rs = { path = "C:/Users/glebm/OneDrive/Документы/ExploreTeam/repositories/simple-render-rs" }
