@@ -4,5 +4,4 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-winit = "0.30.12"
-softbuffer = "0.4.6"
+simple-render-rs = { path = "C:/Users/glebm/OneDrive/Документы/ExploreTeam/repositories/simple-render-rs" }
