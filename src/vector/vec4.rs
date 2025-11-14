@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, Div, Mul};
 
 use crate::{num_traits::Consts, vector::{AxisUnits, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
 
@@ -22,6 +22,12 @@ impl<T: Copy> Vec4<T> {
 
 impl<T: Copy + Consts> Vec4<T> {
     pub const W: Self = Vec4::new(T::ZERO, T::ZERO, T::ZERO, T::ONE);
+}
+
+impl<T: Copy + Div<Output = T>> Vec4<T> {
+    pub fn to_decart_vec3(&self) -> Vec3<T> {
+        Vec3::new(self.x / self.w, self.y / self.w, self.z / self.w)
+    }
 }
 
 impl<T: Copy + Consts> Consts for Vec4<T> {

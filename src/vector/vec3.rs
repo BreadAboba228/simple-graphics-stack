@@ -42,7 +42,7 @@ impl<T: Copy + NegOne + Mul<Output = T> + Sub<Output = T> + Add<Output = T> + Co
     }
 }
 
-impl<T: Copy + Consts > Consts for Vec3<T> {
+impl<T: Copy + Consts> Consts for Vec3<T> {
     const ZERO: Self = Self::splat(T::ZERO);
     const ONE: Self = Self::splat(T::ONE);
 }
