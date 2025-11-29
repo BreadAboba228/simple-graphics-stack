@@ -1,13 +1,13 @@
+#[cfg(test)]
 use simple_render_rs::{num_traits::Consts, render::buffer::BufferSize, vector::{Axis, Unit, matrix4::Matrix4, vec3::Vec3}};
 
 use crate::core::{Engine, figura::{AngleUnit, Figura}};
 
-mod core;
-
-fn main() {
-    let figura = Figura::new_cube(Vec3::ZERO, 2.0);
+#[test]
+fn test_run() {
+    let figura = Figura::new_cube(Vec3::ZERO, 7.5);
      
-    let buffer_size = BufferSize::new(24, 80);
+    let buffer_size = BufferSize::new(75, 250);
 
     let angles = [AngleUnit::new(Axis::X, 3.0), AngleUnit::new(Axis::Z, 3.0)];
 

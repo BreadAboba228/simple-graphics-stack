@@ -16,6 +16,16 @@ impl AngleUnit {
         let axis = self.0.to_vec();
         Quaternion::rotator(rad, axis)
     }
+
+    pub fn unification_to_quater(angles: &[AngleUnit]) -> Quaternion<f64> {
+        let mut q = Quaternion::UNIT;
+
+        for &unit in angles {
+            q = q * unit.to_raw_quater();
+        }
+
+        q
+    }
 }
 
 #[derive(Clone)]
@@ -73,17 +83,18 @@ impl Figura {
         &self.center
     }
 
-    pub fn rotate(&mut self, angles: &[AngleUnit]) {
-        let mut q = Quaternion::UNIT;
-
-        for &unit in angles {
-            q = q * unit.to_raw_quater();
-        }
-
-        q.normalize();
-        
+    pub fn raw_rotate(&mut self, quaternion: Quaternion<f64>) {
         for i in &mut self.vertexes {
-            *i = i.raw_rotate(q)
+            *i = i.raw_rotate(quaternion)
         }
+    }
+
+    pub fn rotate(&mut self, angles: &[AngleUnit]) {
+        
+        let mut q = AngleUnit::unification_to_quater(angles);
+
+        q = q.normalize();
+        
+        self.raw_rotate(q);
     }
 }

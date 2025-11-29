@@ -61,9 +61,13 @@ impl<'a> Engine<'a> {
     pub fn run(&mut self) {
         let fps = self.fps;
 
+        let mut q = AngleUnit::unification_to_quater(self.angles);
+        
+        q = q.normalize();
+
         let func = || -> Buffer {
             let buffer = self.render_frame();
-            self.figura.rotate(self.angles);
+            self.figura.raw_rotate(q);
             buffer
         };
         
