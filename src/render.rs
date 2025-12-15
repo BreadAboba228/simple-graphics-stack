@@ -1,8 +1,9 @@
 use std::{thread, time::Duration};
 
-use crate::render::buffer::Buffer;
+use crate::render::{app_handler::AppHandler};
 
 pub mod buffer;
+pub mod app_handler;
 
 fn clear_console() {
     std::process::Command::new("cmd")
@@ -15,21 +16,21 @@ fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
 }
 
-pub struct Render<U> where U: FnMut() -> Buffer {
+pub struct Render<'a, T> {
     fps: f64,
-    func: U
+    app: &'a mut T
 }
 
-impl<U> Render<U> where U: FnMut() -> Buffer {
-    pub fn new(fps: f64, func: U) -> Self {
-        Self { fps, func }
+impl<'a, T: AppHandler> Render<'a, T> {
+    pub const fn new(fps: f64, app: &'a mut T) -> Self {
+        Self { fps, app }
     }
 
     pub fn run(&mut self) {
         let tick = 1.0 / self.fps;
-        
+
         loop {
-            (self.func)().display();
+            self.app.redraw().display();
 
             wait(tick);
 
