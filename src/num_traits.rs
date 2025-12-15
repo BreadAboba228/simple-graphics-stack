@@ -3,171 +3,50 @@ pub trait Consts {
     const ONE: Self;
 }
 
-impl Consts for i8 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
+macro_rules! impl_consts_trait {
+    ($($t:ty),*) => {
+        $(
+            impl Consts for $t {
+                const ZERO: Self = 0 as $t;
+                const ONE: Self = 1 as $t;
+            }
+        )*
+    };
 }
 
-impl Consts for u8 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for i16 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for u16 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for i32 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for u32 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for i64 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for u64 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for i128 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for u128 {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for isize {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for usize {
-    const ZERO: Self = 0;
-    const ONE: Self = 1;
-}
-
-impl Consts for f32 {
-    const ZERO: Self = 0.0;
-    const ONE: Self = 1.0;
-}
-
-impl Consts for f64 {
-    const ZERO: Self = 0.0;
-    const ONE: Self = 1.0;
-}
+impl_consts_trait!(i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize, f32, f64);
 
 pub trait Two {
     const TWO: Self;
 }
 
-impl Two for i8 {
-    const TWO: Self = 2;
+macro_rules! impl_two_trait {
+    ($($t:ty),*) => {
+        $(
+            impl Two for $t {
+                const TWO: Self = 2 as $t;
+            }
+        )*
+    };
 }
 
-impl Two for u8 {
-    const TWO: Self = 2;
-}
-
-impl Two for i16 {
-    const TWO: Self = 2;
-}
-
-impl Two for u16 {
-    const TWO: Self = 2;
-}
-
-impl Two for i32 {
-    const TWO: Self = 2;
-}
-
-impl Two for u32 {
-    const TWO: Self = 2;
-}
-
-impl Two for i64 {
-    const TWO: Self = 2;
-}
-
-impl Two for u64 {
-    const TWO: Self = 2;
-}
-
-impl Two for i128 {
-    const TWO: Self = 2;
-}
-
-impl Two for u128 {
-    const TWO: Self = 2;
-}
-
-impl Two for isize {
-    const TWO: Self = 2;
-}
-
-impl Two for usize {
-    const TWO: Self = 2;
-}
-
-impl Two for f32 {
-    const TWO: Self = 2.0;
-}
-
-impl Two for f64 {
-    const TWO: Self = 2.0;
-}
+impl_two_trait!(i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize, f32, f64);
 
 pub trait NegOne {
     const NEG_ONE: Self;
 }
 
-impl NegOne for i8 {
-    const NEG_ONE: Self = -1;
+macro_rules! impl_neg_one_trait {
+    ($($t:ty),*) => {
+        $(
+            impl NegOne for $t {
+                const NEG_ONE: Self = -1 as $t;
+            }
+        )*
+    };
 }
 
-impl NegOne for i16 {
-    const NEG_ONE: Self = -1;
-}
-
-impl NegOne for i32 {
-    const NEG_ONE: Self = -1;
-}
-
-impl NegOne for i64 {
-    const NEG_ONE: Self = -1;
-}
-
-impl NegOne for i128 {
-    const NEG_ONE: Self = -1;
-}
-
-impl NegOne for isize {
-    const NEG_ONE: Self = -1;
-}
-
-impl NegOne for f32 {
-    const NEG_ONE: Self = -1.0;
-}
-
-impl NegOne for f64 {
-    const NEG_ONE: Self = -1.0;
-}
+impl_neg_one_trait!(i8, i16, i32, i64, i128, isize, f32, f64);
 
 pub trait Sqrt {
     fn sqrt(self) -> Self;
@@ -187,7 +66,7 @@ impl Sqrt for f64 {
 
 pub trait SinCos {
     fn sin(self) -> Self;
-    
+
     fn cos(self) -> Self;
 
     fn sin_cos(self) -> (Self, Self) where Self: Sized;

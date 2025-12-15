@@ -36,7 +36,18 @@ impl<T: Copy + NegOne + Mul<Output = T>> Quaternion<T> {
 
 impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Consts + PartialEq> Quaternion<T> {
     pub fn normalize(&self) -> Self {
-        Self::from_vec(self.w, self.vec().normalize())
+        let len = (
+            self.x * self.x +
+            self.y * self.y +
+            self.z * self.z +
+            self.w * self.w
+        ).sqrt();
+
+        if len == T::ZERO {
+            Self::splat(T::ZERO)
+        } else {
+            Self::new(self.w / len, self.y / len, self.z / len, self.x / len)
+        }
     }
 }
 
@@ -89,7 +100,7 @@ impl<T: Copy + Mul<Output = T> + Sub<Output = T> + Add<Output = T>> Mul for Quat
         let y = self.w * rhs.y
             - self.x * rhs.z
             + self.y * rhs.w
-            + self.z * rhs.x; 
+            + self.z * rhs.x;
         let z = self.w * rhs.z
             + self.x * rhs.y
             - self.y * rhs.x
