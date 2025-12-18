@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use crate::render::{app_handler::AppHandler};
+use crate::render::{app_handler::AppHandler, buffer::Buffer};
 
 pub mod buffer;
 pub mod app_handler;
@@ -29,8 +29,14 @@ impl<'a, T: AppHandler> Render<'a, T> {
     pub fn run(&mut self) {
         let tick = 1.0 / self.fps;
 
+        let mut buffer = Buffer::new(self.app.buffer_size());
+
         loop {
-            self.app.redraw().display();
+            self.app.redraw(&mut buffer);
+
+            buffer.display();
+
+            buffer.clear();
 
             wait(tick);
 

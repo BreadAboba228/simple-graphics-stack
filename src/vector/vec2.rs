@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Sub};
 
 use crate::{num_traits::Consts, vector::{AxisUnits, quaternion::Quaternion, vec3::Vec3, vec4::Vec4}};
 
@@ -10,23 +10,23 @@ pub struct Vec2<T> {
 
 impl<T: Copy> Vec2<T> {
     pub const fn new(x: T, y: T) -> Self {
-        Vec2 { x, y }
+        Self { x, y }
     }
 
     pub const fn splat(v: T) -> Self {
-        Vec2::new(v, v)
+        Self::new(v, v)
     }
 }
 
 impl<T: Copy + Consts> Consts for Vec2<T> {
-    const ZERO: Self = Vec2::splat(T::ZERO);
-    const ONE: Self = Vec2::splat(T::ONE);
+    const ZERO: Self = Self::splat(T::ZERO);
+    const ONE: Self = Self::splat(T::ONE);
 }
 
 impl<T: Copy + Consts> AxisUnits for Vec2<T> {
-    const X: Self = Vec2::new(T::ONE, T::ZERO);
-    const Y: Self = Vec2::new(T::ZERO, T::ONE);
-    const Z: Self = Vec2::new(T::ZERO, T::ZERO);
+    const X: Self = Self::new(T::ONE, T::ZERO);
+    const Y: Self = Self::new(T::ZERO, T::ONE);
+    const Z: Self = Self::new(T::ZERO, T::ZERO);
 }
 
 impl<T: Copy + Add<Output = T>> Add for Vec2<T> {
@@ -35,7 +35,17 @@ impl<T: Copy + Add<Output = T>> Add for Vec2<T> {
     fn add(self, rhs: Self) -> Self::Output {
         let x = self.x + rhs.x;
         let y = self.y + rhs.y;
-        Vec2::new(x, y)
+        Self::new(x, y)
+    }
+}
+
+impl<T: Copy + Sub<Output = T>> Sub for Vec2<T> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let x = self.x - rhs.x;
+        let y = self.y - rhs.y;
+        Self::new(x, y)
     }
 }
 
@@ -45,7 +55,7 @@ impl<T: Copy + Mul<Output = T>> Mul for Vec2<T> {
     fn mul(self, rhs: Self) -> Self::Output {
         let x = self.x * rhs.x;
         let y = self.y * rhs.y;
-        Vec2::new(x, y)
+        Self::new(x, y)
     }
 }
 

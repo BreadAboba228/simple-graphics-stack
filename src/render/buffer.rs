@@ -24,6 +24,14 @@ impl Buffer {
         Self(height_vec)
     }
 
+    pub fn clear(&mut self) {
+        for i in &mut self.0 {
+            for j in i {
+                *j = ' ';
+            }
+        }
+    }
+
     pub fn display(&self) {
         for i in &self.0 {
             for &j in i {
@@ -34,10 +42,10 @@ impl Buffer {
     }
 
     pub fn draw_line(
-        &mut self, 
-        size: BufferSize, 
-        start: Vec2<isize>, 
-        end: Vec2<isize>, 
+        &mut self,
+        size: BufferSize,
+        start: Vec2<isize>,
+        end: Vec2<isize>,
         ch: char
     ) {
         let Vec2 { x: mut x1, y: mut y1 } = start;
@@ -46,7 +54,7 @@ impl Buffer {
         let delta_x = (x2 - x1).abs();
         let delta_y = (y2 - y1).abs();
 
-        let step_x = 
+        let step_x =
             if x2 > x1 { 1 }
             else { -1 };
 
@@ -72,7 +80,7 @@ impl Buffer {
                 err -= delta_y;
                 x1 += step_x;
             }
-            
+
             if double_err < delta_x {
                 err += delta_x;
                 y1 += step_y;

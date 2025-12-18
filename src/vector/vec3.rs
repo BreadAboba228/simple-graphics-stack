@@ -18,6 +18,11 @@ impl<T: Copy> Vec3<T> {
         Self::new(v, v, v)
     }
 }
+impl<T: Copy + Consts> Vec3<T> {
+    pub fn extend_to_vec4(&self) -> Vec4<T> {
+        Vec4::new(self.x, self.y, self.z, T::ONE)
+    }
+}
 
 impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Consts + PartialEq> Vec3<T> {
     pub fn normalize(&self) -> Self {
@@ -60,6 +65,17 @@ impl<T: Copy + Add<Output = T>> Add for Vec3<T> {
         let x = self.x + rhs.x;
         let y = self.y + rhs.y;
         let z = self.z + rhs.z;
+        Self::new(x, y, z)
+    }
+}
+
+impl<T: Copy + Sub<Output = T>> Sub for Vec3<T> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let x = self.x - rhs.x;
+        let y = self.y - rhs.y;
+        let z = self.z - rhs.z;
         Self::new(x, y, z)
     }
 }
