@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::{num_traits::Consts, vector::{AxisUnits, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
+use crate::{num_traits::{Consts, Sqrt}, vector::{AxisUnits, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Vec4<T> {
@@ -25,11 +25,28 @@ impl<T: Copy + Consts> Vec4<T> {
 }
 
 impl<T: Copy + Div<Output = T> + Consts + PartialEq> Vec4<T> {
-    pub fn to_affine_vec3(&self) -> Vec3<T> {
+    pub fn to_affine(&self) -> Vec3<T> {
         if self.w == T::ZERO {
             Vec3::splat(T::ZERO)
         } else {
             Vec3::new(self.x / self.w, self.y / self.w, self.z / self.w)
+        }
+    }
+}
+
+impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Consts + PartialEq> Vec4<T> {
+    pub fn to_normalized(&self) -> Self {
+        let len = (
+            self.x * self.x +
+            self.y * self.y +
+            self.z * self.z +
+            self.w * self.w
+        ).sqrt();
+
+        if len == T::ZERO {
+            Self::ZERO
+        } else {
+            Self::new(self.w / len, self.y / len, self.z / len, self.x / len)
         }
     }
 }

@@ -15,7 +15,7 @@ impl<T: Copy> Matrix4<T> {
         Self { i, j, k, w }
     }
 
-    pub const fn row_based_new(x: Vec4<T>, y: Vec4<T>, z: Vec4<T>, w: Vec4<T>) -> Self {
+    pub const fn row_major_new(x: Vec4<T>, y: Vec4<T>, z: Vec4<T>, w: Vec4<T>) -> Self {
         let i = Vec4::new(x.x, y.x, z.x, w.x);
         let j = Vec4::new(x.y, y.y, z.y, w.y);
         let k = Vec4::new(x.z, y.z, z.z, w.z);
@@ -70,7 +70,7 @@ impl Matrix4<f64> {
     pub fn new_perspective(fov: f64, aspect: f64, near: f64, far: f64) -> Matrix4<f64> {
         let f = 1.0 / (fov.to_radians() / 2.0).tan();
 
-        Matrix4::row_based_new(
+        Matrix4::row_major_new(
             Vec4::new(f / aspect, 0.0, 0.0, 0.0),
             Vec4::new(0.0, f, 0.0, 0.0),
             Vec4::new(0.0, 0.0, (far + near) / (near - far), -1.0),

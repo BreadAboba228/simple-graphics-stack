@@ -12,6 +12,12 @@ impl<T: Copy> Matrix2<T> {
     pub const fn new(i: Vec2<T>, j: Vec2<T>) -> Self {
         Self { i, j }
     }
+
+    pub const fn row_major_new(x: Vec2<T>, y: Vec2<T>) -> Self {
+        let i = Vec2::new(x.x, y.x);
+        let j = Vec2::new(x.y, y.y);
+        Self::new(i, j)
+    }
 }
 
 impl<T: Copy + Consts> Unit for Matrix2<T> {

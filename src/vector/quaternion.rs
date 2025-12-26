@@ -35,7 +35,7 @@ impl<T: Copy + NegOne + Mul<Output = T>> Quaternion<T> {
 }
 
 impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Consts + PartialEq> Quaternion<T> {
-    pub fn normalize(&self) -> Self {
+    pub fn to_normalized(&self) -> Self {
         let len = (
             self.x * self.x +
             self.y * self.y +
@@ -44,7 +44,7 @@ impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Cons
         ).sqrt();
 
         if len == T::ZERO {
-            Self::splat(T::ZERO)
+            Self::ZERO
         } else {
             Self::new(self.w / len, self.y / len, self.z / len, self.x / len)
         }

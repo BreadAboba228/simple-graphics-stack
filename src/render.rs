@@ -17,13 +17,13 @@ fn wait(secs: f64) {
 }
 
 pub struct Render<'a, T> {
+    app: &'a mut T,
     fps: f64,
-    app: &'a mut T
 }
 
 impl<'a, T: AppHandler> Render<'a, T> {
-    pub const fn new(fps: f64, app: &'a mut T) -> Self {
-        Self { fps, app }
+    pub const fn new(app: &'a mut T, fps: f64) -> Self {
+        Self { app, fps }
     }
 
     pub fn run(&mut self) {

@@ -13,6 +13,13 @@ impl<T: Copy> Matrix3<T> {
     pub const fn new(i: Vec3<T>, j: Vec3<T>, k: Vec3<T>) -> Self {
         Self { i, j, k }
     }
+
+    pub const fn row_major_new(x: Vec3<T>, y: Vec3<T>, z: Vec3<T>) -> Self {
+        let i = Vec3::new(x.x, y.x, z.x);
+        let j = Vec3::new(x.y, y.y, z.y);
+        let k = Vec3::new(x.z, y.z, z.z);
+        Self::new(i, j, k)
+    }
 }
 
 impl<T: Copy + Consts> Unit for Matrix3<T> {

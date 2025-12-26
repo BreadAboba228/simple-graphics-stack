@@ -1,6 +1,7 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
-use crate::{num_traits::Consts, vector::{AxisUnits, quaternion::Quaternion, vec3::Vec3, vec4::Vec4}};
+
+use crate::{num_traits::{Consts, Sqrt}, vector::{AxisUnits, quaternion::Quaternion, vec3::Vec3, vec4::Vec4}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Vec2<T> {
@@ -18,6 +19,12 @@ impl<T: Copy> Vec2<T> {
     }
 }
 
+impl <T: Copy + Consts> Vec2<T> {
+    pub fn to_homogeneous(&self) -> Vec3<T> {
+        Vec3::new(self.x, self.y, T::ONE)
+    }
+}
+
 impl<T: Copy + Consts> Consts for Vec2<T> {
     const ZERO: Self = Self::splat(T::ZERO);
     const ONE: Self = Self::splat(T::ONE);
@@ -27,6 +34,18 @@ impl<T: Copy + Consts> AxisUnits for Vec2<T> {
     const X: Self = Self::new(T::ONE, T::ZERO);
     const Y: Self = Self::new(T::ZERO, T::ONE);
     const Z: Self = Self::new(T::ZERO, T::ZERO);
+}
+
+impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Consts + PartialEq> Vec2<T> {
+    pub fn to_normalized(&self) -> Self {
+        let len = (self.x * self.x + self.y * self.y).sqrt();
+
+        if len == T::ZERO {
+            Self::ZERO
+        } else {
+            Self::new(self.x / len, self.y / len)
+        }
+    }
 }
 
 impl<T: Copy + Add<Output = T>> Add for Vec2<T> {

@@ -19,21 +19,29 @@ impl<T: Copy> Vec3<T> {
     }
 }
 impl<T: Copy + Consts> Vec3<T> {
-    pub fn extend_to_vec4(&self) -> Vec4<T> {
+    pub fn to_homogeneous(&self) -> Vec4<T> {
         Vec4::new(self.x, self.y, self.z, T::ONE)
     }
 }
 
+impl<T: Copy + Div<Output = T> + Consts + PartialEq> Vec3<T> {
+    pub fn to_affine(&self) -> Vec2<T> {
+        if self.y == T::ZERO {
+            Vec2::splat(T::ZERO)
+        } else {
+            let x = self.x / self.y;
+            let y = self.y / self.y;
+            Vec2::new(x, y)
+        }
+    }
+}
+
 impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Consts + PartialEq> Vec3<T> {
-    pub fn normalize(&self) -> Self {
-        let len = (
-            self.x * self.x
-            + self.y * self.y
-            + self.z * self.z
-        ).sqrt();
+    pub fn to_normalized(&self) -> Self {
+        let len = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
 
         if len == T::ZERO {
-            Self::splat(T::ZERO)
+            Self::ZERO
         } else {
            Self::new(self.x / len, self.y / len, self.z / len)
         }
