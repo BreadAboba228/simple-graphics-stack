@@ -23,13 +23,13 @@ fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
 }
 
-pub struct Render<T> {
-    app: T,
+pub struct Render<'a, T> {
+    app: &'a mut T,
     fps: f64,
 }
 
-impl<T: AppHandler + Send> Render<T> {
-    pub const fn new(app: T, fps: f64) -> Self {
+impl<'a, T: AppHandler + Send> Render<'a, T> {
+    pub const fn new(app: &'a mut T, fps: f64) -> Self {
         Self { app, fps }
     }
 
