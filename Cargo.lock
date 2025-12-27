@@ -12,3 +12,4 @@ dependencies = [
 [[package]]
 name = "simple-render-rs"
 version = "0.1.0"
+source = "git+https://github.com/BreadAboba228/simple-render-rs#39989c9b5ee4483eae3a65e5f498b5a584e0875f"
