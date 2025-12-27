@@ -23,31 +23,40 @@ fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
 }
 
-pub struct Render<'a, T> {
-    app: &'a mut T,
+pub struct Render<T> {
+    app: T,
     fps: f64,
 }
 
-impl<'a, T: AppHandler> Render<'a, T> {
-    pub const fn new(app: &'a mut T, fps: f64) -> Self {
+impl<T: AppHandler + Send> Render<T> {
+    pub const fn new(app: T, fps: f64) -> Self {
         Self { app, fps }
     }
 
     pub fn run(&mut self) {
         let tick = 1.0 / self.fps;
+        let size = self.app.buffer_size();
 
-        let mut buffer = Buffer::new(self.app.buffer_size());
+
+        let mut front = Buffer::new(size);
+        let mut back = Buffer::new(size);
 
         loop {
-            self.app.redraw(&mut buffer);
-
-            buffer.display();
-
-            buffer.clear();
-
-            wait(tick);
-
             clear_console();
+
+            thread::scope(|s| {
+                s.spawn(|| {
+                    self.app.redraw(&mut back);
+                });
+
+                front.display();
+
+                front.clear();
+
+                wait(tick);
+            });
+
+            std::mem::swap(&mut front, &mut back);
         }
     }
 }
