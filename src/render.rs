@@ -6,10 +6,17 @@ pub mod buffer;
 pub mod app_handler;
 
 fn clear_console() {
-    std::process::Command::new("cmd")
-        .args(&["/C", "cls"])
-        .status()
-        .expect("OS error");
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("cmd")
+            .args(&["/C", "cls"])
+            .status()
+            .expect("OS error");
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        print!("\x1B[2J\x1B[H");
+    }
 }
 
 fn wait(secs: f64) {

@@ -1,6 +1,5 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-
 use crate::{num_traits::{Consts, Sqrt}, vector::{AxisUnits, quaternion::Quaternion, vec3::Vec3, vec4::Vec4}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]

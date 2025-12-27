@@ -26,9 +26,7 @@ impl Buffer {
 
     pub fn clear(&mut self) {
         for i in &mut self.0 {
-            for j in i {
-                *j = ' ';
-            }
+            i.fill(' ');
         }
     }
 

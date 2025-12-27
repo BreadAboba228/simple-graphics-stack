@@ -26,11 +26,11 @@ impl<T: Copy + Consts> Vec3<T> {
 
 impl<T: Copy + Div<Output = T> + Consts + PartialEq> Vec3<T> {
     pub fn to_affine(&self) -> Vec2<T> {
-        if self.y == T::ZERO {
+        if self.z == T::ZERO {
             Vec2::splat(T::ZERO)
         } else {
-            let x = self.x / self.y;
-            let y = self.y / self.y;
+            let x = self.x / self.z;
+            let y = self.y / self.z;
             Vec2::new(x, y)
         }
     }

@@ -27,7 +27,7 @@ impl<T: Copy + Consts> Vec4<T> {
 impl<T: Copy + Div<Output = T> + Consts + PartialEq> Vec4<T> {
     pub fn to_affine(&self) -> Vec3<T> {
         if self.w == T::ZERO {
-            Vec3::splat(T::ZERO)
+            Vec3::ZERO
         } else {
             Vec3::new(self.x / self.w, self.y / self.w, self.z / self.w)
         }
@@ -46,7 +46,7 @@ impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Cons
         if len == T::ZERO {
             Self::ZERO
         } else {
-            Self::new(self.w / len, self.y / len, self.z / len, self.x / len)
+            Self::new(self.x / len, self.y / len, self.z / len, self.w / len)
         }
     }
 }
@@ -93,7 +93,7 @@ impl<T: Copy + Mul<Output = T>> Mul for Vec4<T> {
         let x = self.x * rhs.x;
         let y = self.y * rhs.y;
         let z = self.z * rhs.z;
-        let w = self.w * self.w;
+        let w = self.w * rhs.w;
         Self::new(x, y, z, w)
     }
 }

@@ -46,7 +46,7 @@ impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Cons
         if len == T::ZERO {
             Self::ZERO
         } else {
-            Self::new(self.w / len, self.y / len, self.z / len, self.x / len)
+            Self::new(self.w / len, self.x / len, self.y / len, self.z / len)
         }
     }
 }
