@@ -54,7 +54,7 @@ impl Buffer {
         loop {
             if (0 <= x1 && x1 < size.width as isize) &&
             (0 <= y1 && y1 < size.height as isize) {
-                self.0[(y1 as usize - 1) * size.width + x1 as usize - 1] = color.0
+                self.0[((y1 as usize).saturating_sub(1) * size.width + x1 as usize).saturating_sub(1)] = color.0
             }
 
             if x1 == x2 && y1 == y2 {
