@@ -1,4 +1,4 @@
-use simple_render_rs::vector::{Axis, Unit, quaternion::Quaternion, vec3::Vec3};
+use simple_linear_algebra_rs::{matrix::Unit, vector::{Axis, quaternion::Quaternion, vec3::Vec3}};
 
 pub mod cube;
 

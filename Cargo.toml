@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 simple-render-rs = { git = "https://github.com/BreadAboba228/simple-render-rs" }
+simple-linear-algebra-rs = { git = "https://github.com/BreadAboba228/simple-linear-algebra-rs" }

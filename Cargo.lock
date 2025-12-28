@@ -6,10 +6,19 @@ version = 4
 name = "simple-3d-rs"
 version = "0.1.0"
 dependencies = [
+ "simple-linear-algebra-rs",
  "simple-render-rs",
 ]
 
 [[package]]
+name = "simple-linear-algebra-rs"
+version = "0.1.0"
+source = "git+https://github.com/BreadAboba228/simple-linear-algebra-rs#89f1d5c4f14aa460b2604ac53459c4644be0386b"
+
+[[package]]
 name = "simple-render-rs"
 version = "0.1.0"
-source = "git+https://github.com/BreadAboba228/simple-render-rs#39989c9b5ee4483eae3a65e5f498b5a584e0875f"
+source = "git+https://github.com/BreadAboba228/simple-render-rs#ec0bef005bca38065a9eabb343ee94e0526e2a94"
+dependencies = [
+ "simple-linear-algebra-rs",
+]

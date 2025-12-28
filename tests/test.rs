@@ -1,5 +1,7 @@
 #[cfg(test)]
-use simple_render_rs::{render::buffer::BufferSize, vector::{Axis, Unit, matrix4::Matrix4, vec3::Vec3}};
+use simple_render_rs::{render::buffer::BufferSize};
+#[cfg(test)]
+use simple_linear_algebra_rs::{matrix::{Unit, matrix4::Matrix4}, vector::{Axis, vec3::Vec3}};
 #[cfg(test)]
 use simple_3d_rs::{engine::{Engine, shape::{AngleUnit, cube::Cube}}};
 

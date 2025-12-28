@@ -1,4 +1,5 @@
-use simple_render_rs::{render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}, vector::{matrix4::Matrix4, quaternion::Quaternion, vec2::Vec2}};
+use simple_linear_algebra_rs::{matrix::matrix4::Matrix4, vector::{quaternion::Quaternion, vec2::Vec2}};
+use simple_render_rs::render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}};
 
 use crate::engine::shape::{AngleUnit, Shape};
 

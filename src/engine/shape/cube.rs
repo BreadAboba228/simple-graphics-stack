@@ -1,4 +1,4 @@
-use simple_render_rs::vector::vec3::Vec3;
+use simple_linear_algebra_rs::vector::vec3::Vec3;
 
 use crate::engine::shape::{EdgeUnit, Shape};
 
