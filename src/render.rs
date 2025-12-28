@@ -1,23 +1,12 @@
 use std::{thread, time::Duration};
 
-use crate::render::{app_handler::AppHandler, buffer::Buffer};
+use minifb::Window;
+
+use crate::render::{app_handler::AppHandler, buffer::{Buffer, Color}};
 
 pub mod buffer;
 pub mod app_handler;
 
-fn clear_console() {
-    #[cfg(target_os = "windows")]
-    {
-        std::process::Command::new("cmd")
-            .args(&["/C", "cls"])
-            .status()
-            .expect("OS error");
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        print!("\x1B[2J\x1B[H");
-    }
-}
 
 fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
@@ -26,11 +15,12 @@ fn wait(secs: f64) {
 pub struct Render<'a, T> {
     app: &'a mut T,
     fps: f64,
+    window: Window,
 }
 
 impl<'a, T: AppHandler + Send> Render<'a, T> {
-    pub const fn new(app: &'a mut T, fps: f64) -> Self {
-        Self { app, fps }
+    pub const fn new(app: &'a mut T, fps: f64, window: Window) -> Self {
+        Self { app, fps, window }
     }
 
     pub fn run(&mut self) {
@@ -43,22 +33,22 @@ impl<'a, T: AppHandler + Send> Render<'a, T> {
 
         self.app.redraw(&mut front);
 
-        loop {
-            clear_console();
-
+        while self.window.is_open() {
             thread::scope(|s| {
                 s.spawn(|| {
                     self.app.redraw(&mut back);
                 });
 
-                front.display();
+                self.window.update_with_buffer(&front.0, size.width, size.height).unwrap();
 
-                front.clear();
+                front.fill(Color::new(0));
 
                 wait(tick);
             });
 
             std::mem::swap(&mut front, &mut back);
         }
+
+
     }
 }
