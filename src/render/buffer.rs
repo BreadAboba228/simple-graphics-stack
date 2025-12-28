@@ -1,4 +1,4 @@
-use crate::{vector::vec2::Vec2};
+use simple_linear_algebra_rs::vector::vec2::Vec2;
 
 #[derive(Clone, Copy)]
 pub struct BufferSize {

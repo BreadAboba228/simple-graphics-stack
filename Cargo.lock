@@ -3,5 +3,13 @@
 version = 4
 
 [[package]]
+name = "simple-linear-algebra-rs"
+version = "0.1.0"
+source = "git+https://github.com/BreadAboba228/simple-linear-algebra-rs#89f1d5c4f14aa460b2604ac53459c4644be0386b"
+
+[[package]]
 name = "simple-render-rs"
 version = "0.1.0"
+dependencies = [
+ "simple-linear-algebra-rs",
+]

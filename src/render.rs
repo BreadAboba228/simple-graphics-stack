@@ -41,6 +41,8 @@ impl<'a, T: AppHandler + Send> Render<'a, T> {
         let mut front = Buffer::new(size);
         let mut back = Buffer::new(size);
 
+        self.app.redraw(&mut front);
+
         loop {
             clear_console();
 
