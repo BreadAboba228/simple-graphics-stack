@@ -2,6 +2,8 @@ use std::usize;
 
 use simple_linear_algebra_rs::vector::vec2::Vec2;
 
+use crate::color::Color;
+
 #[derive(Clone, Copy)]
 pub struct BufferSize {
     pub height: usize,
@@ -11,20 +13,6 @@ pub struct BufferSize {
 impl BufferSize {
     pub const fn new(height: usize, width: usize) -> Self {
         Self { height, width }
-    }
-}
-
-pub struct Color(pub u32);
-
-impl Color {
-    pub const fn new(color: u32) -> Self {
-        Self(color)
-    }
-
-    pub const fn from_rgb(r: u8, b: u8, g: u8) -> Self {
-        let (r, g, b) = (r as u32, b as u32, g as u32);
-        let color = (r << 16) | (g << 8) | b;
-        Self::new(color)
     }
 }
 

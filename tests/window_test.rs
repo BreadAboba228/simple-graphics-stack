@@ -14,7 +14,7 @@ impl AppHandler for App {
 
     fn redraw(&mut self, buffer: &mut simple_render_rs::render::buffer::Buffer) {
         use simple_linear_algebra_rs::vector::vec2::Vec2;
-        use simple_render_rs::render::buffer::Color;
+        use simple_render_rs::color::Color;
 
         buffer.draw_line(self.0, Vec2::new(self.0.width as isize, self.0.height as isize), Vec2::new(1, 1), Color::from_rgb(0, 255, 255));
     }
