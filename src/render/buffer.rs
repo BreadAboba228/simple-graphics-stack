@@ -1,3 +1,5 @@
+use std::usize;
+
 use simple_linear_algebra_rs::vector::vec2::Vec2;
 
 #[derive(Clone, Copy)]
@@ -12,31 +14,30 @@ impl BufferSize {
     }
 }
 
-pub struct Buffer(pub Vec<Vec<char>>);
+pub struct Color(pub u32);
+
+impl Color {
+    pub const fn new(color: u32) -> Self {
+        Self(color)
+    }
+
+    pub const fn from_rgb(r: u8, b: u8, g: u8) -> Self {
+        let (r, g, b) = (r as u32, b as u32, g as u32);
+        let color = (r << 16) | (g << 8) | b;
+        Self::new(color)
+    }
+}
+
+pub struct Buffer(pub Vec<u32>);
 
 impl Buffer {
     pub fn new(size: BufferSize) -> Self {
-        let mut height_vec = Vec::<Vec<char>>::with_capacity(size.height);
-        for _ in 0..size.height {
-            let width_vec = vec![' '; size.width];
-            height_vec.push(width_vec);
-        }
-        Self(height_vec)
+        let vec = vec![0; size.width * size.height];
+        Self(vec)
     }
 
-    pub fn clear(&mut self) {
-        for i in &mut self.0 {
-            i.fill(' ');
-        }
-    }
-
-    pub fn display(&self) {
-        for i in &self.0 {
-            for &j in i {
-                print!("{j}");
-            }
-            print!("\n");
-        }
+    pub fn fill(&mut self, color: Color) {
+        self.0.fill(color.0);
     }
 
     pub fn draw_line(
@@ -44,7 +45,7 @@ impl Buffer {
         size: BufferSize,
         start: Vec2<isize>,
         end: Vec2<isize>,
-        ch: char
+        color: Color
     ) {
         let Vec2 { x: mut x1, y: mut y1 } = start;
         let Vec2 {x: x2, y: y2} = end;
@@ -65,7 +66,7 @@ impl Buffer {
         loop {
             if (0 <= x1 && x1 < size.width as isize) &&
             (0 <= y1 && y1 < size.height as isize) {
-                self.0[y1 as usize][x1 as usize] = ch
+                self.0[(y1 as usize - 1) * size.width + x1 as usize - 1] = color.0
             }
 
             if x1 == x2 && y1 == y2 {
