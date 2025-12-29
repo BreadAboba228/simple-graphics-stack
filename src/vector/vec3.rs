@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::{num_traits::{Consts, NegOne, Sqrt}, vector::{AxisUnits, quaternion::Quaternion, vec2::Vec2, vec4::Vec4}};
+use crate::{matrix::matrix4::Matrix4, num_traits::{Consts, NegOne, Sqrt}, vector::{AxisUnits, quaternion::Quaternion, vec2::Vec2, vec4::Vec4}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Vec3<T> {
@@ -24,10 +24,20 @@ impl<T: Copy + Consts> Vec3<T> {
     }
 }
 
+impl<T: Copy + Consts> Vec3<T> {
+    pub fn to_displacement_matrix(&self) -> Matrix4<T> {
+        let i = Vec4::X;
+        let j = Vec4::Y;
+        let k = Vec4::Z;
+        let w = Vec4::new(self.x, self.y, self.z, T::ONE);
+        Matrix4::new(i, j, k, w)
+    }
+}
+
 impl<T: Copy + Div<Output = T> + Consts + PartialEq> Vec3<T> {
     pub fn to_affine(&self) -> Vec2<T> {
         if self.z == T::ZERO {
-            Vec2::splat(T::ZERO)
+            Vec2::ZERO
         } else {
             let x = self.x / self.z;
             let y = self.y / self.z;

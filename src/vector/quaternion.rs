@@ -52,7 +52,7 @@ impl<T: Copy + Sqrt + Mul<Output = T> + Add<Output = T> + Div<Output = T> + Cons
 }
 
 impl<T: Copy + SinCos + Two + Div<Output = T> + Mul<Output = T>> Quaternion<T> {
-    pub fn rotator(rad: T, axis: Vec3<T>) -> Self {
+    pub fn from_angle(rad: T, axis: Vec3<T>) -> Self {
         let (sin, cos) = (rad / T::TWO).sin_cos();
         Self::from_vec(cos, axis * sin)
     }
