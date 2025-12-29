@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 
 use minifb::Window;
 
-use crate::{color::Color, render::{app_handler::AppHandler, buffer::Buffer}};
+use crate::{render::{app_handler::AppHandler, buffer::Buffer}};
 
 pub mod buffer;
 pub mod app_handler;
@@ -40,8 +40,6 @@ impl<'a, T: AppHandler + Send> Render<'a, T> {
                 });
 
                 self.window.update_with_buffer(&front.0, size.width, size.height).unwrap();
-
-                front.fill(Color::new(0));
 
                 wait(tick);
             });
