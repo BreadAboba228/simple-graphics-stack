@@ -1,19 +1,27 @@
-use simple_render_rs::{render::{Render, buffer::{Buffer, BufferSize}}, vector::vec2::Vec2};
+use minifb::Window;
+use simple_linear_algebra_rs::vector::vec2::Vec2;
+use simple_render_rs::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
 
 pub struct Builder {
     size: BufferSize,
     func: fn(isize) -> isize,
-    ch: char,
+    color: Color,
 }
 
 impl Builder {
-    pub fn new(size: BufferSize, func: fn(isize) -> isize, ch: char) -> Self {
-        Self { size, func, ch }
+    pub fn new(size: BufferSize, func: fn(isize) -> isize, color: Color) -> Self {
+        Self { size, func, color }
     }
 
-    pub fn render_frame(&self) -> Buffer {
-        let mut buffer = Buffer::new(self.size);
+    pub fn run(&mut self, fps: f64, window: Window) {
+        let mut render = Render::new(self, fps, window);
 
+        render.run();
+    }
+}
+
+impl AppHandler for Builder {
+    fn redraw(&mut self, buffer: &mut Buffer) {
         let mut vec2_vec = Vec::<Vec2<isize>>::with_capacity(self.size.width);
 
         for x in 1..self.size.width as isize {
@@ -28,20 +36,12 @@ impl Builder {
 
         while let Some(vec) = iter.next() {
             if let Some(&f) = iter.peek() {
-                buffer.draw_line(self.size, *vec, *f, self.ch);
+                buffer.draw_line(self.size, *vec, *f, self.color);
             }
         }
-
-        buffer
     }
 
-    pub fn run(&self) {
-        let func = || -> Buffer {
-            self.render_frame()
-        };
-
-        let mut render = Render::new(30.0, func);
-
-        render.run();
+    fn buffer_size(&self) -> BufferSize {
+        self.size
     }
 }
