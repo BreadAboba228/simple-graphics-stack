@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
+use std::{ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign}, u32};
 
 #[derive(Clone, Copy)]
 pub struct Color(pub u32);
@@ -17,6 +17,12 @@ impl Color {
     pub const fn to_rgb(&self) -> (u8, u8, u8) {
         ((self.0 >> 16) as u8, (self.0 >> 8) as u8, self.0 as u8)
     }
+
+    pub const BLACK: Self = Color::new(0);
+    pub const WHITE: Self = Color::new(u32::MAX);
+    pub const RED: Self = Color::from_rgb(255, 0, 0);
+    pub const GREEN: Self = Color::from_rgb(0, 255, 0);
+    pub const BLUE: Self = Color::from_rgb(0, 0, 255);
 }
 
 impl Add for Color {
