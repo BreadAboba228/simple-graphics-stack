@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul};
 
-use crate::{num_traits::Consts, matrix::Unit, vector::{AxisUnits, vec3::Vec3, vec4::Vec4}};
+use crate::{matrix::Unit, num_traits::{One, Zero}, vector::{AxisUnits, vec4::Vec4}};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Matrix4<T> {
@@ -24,13 +24,7 @@ impl<T: Copy> Matrix4<T> {
     }
 }
 
-impl<T: Copy + Consts> Matrix4<T> {
-    pub const fn offset(shift: Vec3<T>) -> Self {
-        Self::new(Vec4::X, Vec4::Y, Vec4::Z, Vec4::new(shift.x, shift.y, shift.z, T::ONE))
-    }
-}
-
-impl<T: Copy + Consts> Unit for Matrix4<T> {
+impl<T: Copy + Zero + One> Unit for Matrix4<T> {
     const UNIT: Self = Self::new(Vec4::X, Vec4::Y, Vec4::Z, Vec4::W);
 }
 
@@ -42,6 +36,7 @@ impl<T: Copy + Add<Output = T>> Add for Matrix4<T> {
         let j = self.j + rhs.j;
         let k = self.k + rhs.k;
         let w = self.w + rhs.w;
+
         Self::new(i, j, k, w)
     }
 }
@@ -54,6 +49,7 @@ impl<T: Copy + Add<Output = T> + Mul<Output = T>> Mul for Matrix4<T> {
         let j = self * rhs.j;
         let k = self * rhs.k;
         let w = self * rhs.w;
+
         Self::new(i, j, k, w)
     }
 }

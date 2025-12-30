@@ -1,6 +1,6 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Neg};
 
-use crate::{num_traits::Consts, matrix::Unit, vector::{vec2::Vec2, AxisUnits}};
+use crate::{matrix::Unit, num_traits::{NegOne, One, SinCos, Zero}, vector::{AxisUnits, vec2::Vec2}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Matrix2<T> {
@@ -20,7 +20,16 @@ impl<T: Copy> Matrix2<T> {
     }
 }
 
-impl<T: Copy + Consts> Unit for Matrix2<T> {
+impl<T: Copy + SinCos + NegOne + Neg<Output = T>> Matrix2<T> {
+    pub fn rotate_matrix(rad: T) -> Self {
+        let (sin, cos) = rad.sin_cos();
+        let i = Vec2::new(cos, sin);
+        let j = Vec2::new(-sin, cos);
+        Matrix2::new(i, j)
+    }
+}
+
+impl<T: Copy + Zero + One> Unit for Matrix2<T> {
     const UNIT: Self = Self::new(Vec2::X, Vec2::Y);
 }
 

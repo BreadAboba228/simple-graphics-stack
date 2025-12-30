@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul};
 
-use crate::{num_traits::Consts, matrix::Unit, vector::{vec3::Vec3, AxisUnits}};
+use crate::{matrix::Unit, num_traits::{One, Zero}, vector::{AxisUnits, vec3::Vec3}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Matrix3<T> {
@@ -22,7 +22,7 @@ impl<T: Copy> Matrix3<T> {
     }
 }
 
-impl<T: Copy + Consts> Unit for Matrix3<T> {
+impl<T: Copy + Zero + One> Unit for Matrix3<T> {
     const UNIT: Self = Self::new(Vec3::X, Vec3::Y, Vec3::Z);
 }
 

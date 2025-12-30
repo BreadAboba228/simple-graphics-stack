@@ -1,20 +1,34 @@
-pub trait Consts {
+pub trait Zero {
     const ZERO: Self;
+}
+
+macro_rules! impl_zero_trait {
+    ($($t:ty),*) => {
+        $(
+            impl Zero for $t {
+                const ZERO: Self = 0 as $t;
+            }
+        )*
+    };
+}
+
+impl_zero_trait!(i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize, f32, f64);
+
+pub trait One {
     const ONE: Self;
 }
 
-macro_rules! impl_consts_trait {
+macro_rules! impl_one_trait {
     ($($t:ty),*) => {
         $(
-            impl Consts for $t {
-                const ZERO: Self = 0 as $t;
+            impl One for $t {
                 const ONE: Self = 1 as $t;
             }
         )*
     };
 }
 
-impl_consts_trait!(i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize, f32, f64);
+impl_one_trait!(i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize, f32, f64);
 
 pub trait Two {
     const TWO: Self;
