@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use simple_render_rs::{color::Color, render::{app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+use simple_render::{color::Color, render::{app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
 
 //-6% load
 fn main() {
@@ -60,8 +60,8 @@ impl AppHandler for App {
     }
 
     fn redraw(&mut self, buffer: &mut Buffer) {
-        use simple_linear_algebra_rs::vector::vec2::Vec2;
-        use simple_render_rs::color::Color;
+        use simple_linear_algebra::vector::vec2::Vec2;
+        use simple_render::color::Color;
 
         //black
         buffer.fill(Color::new(0));

@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use simple_linear_algebra_rs::{matrix::{Unit, matrix4::Matrix4}, vector::{Axis, Vector, quaternion::Quaternion, vec3::Vec3}};
+use simple_linear_algebra::{matrix::{Unit, matrix4::Matrix4}, vector::{Axis, Vector, quaternion::Quaternion, vec3::Vec3}};
 
 pub mod cube;
 
@@ -64,9 +64,9 @@ impl Shape {
         &self.center
     }
 
-    pub fn raw_rotate(&mut self, quaternion: Quaternion<f64>) {
+    pub fn raw_rotate(&mut self, quater: Quaternion<f64>) {
         for i in &mut self.vertexes {
-            *i = (*i - self.center).to_raw_rotated(quaternion) + self.center
+            *i = (*i - self.center).to_raw_rotated(quater) + self.center;
         }
     }
 

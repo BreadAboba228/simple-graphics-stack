@@ -1,6 +1,6 @@
 use std::usize;
 
-use simple_linear_algebra_rs::vector::vec2::Vec2;
+use simple_linear_algebra::vector::vec2::Vec2;
 
 use crate::color::Color;
 
@@ -32,7 +32,7 @@ impl Buffer {
         let Vec2 { x, y } = point;
 
         if (0 <= x && x < size.width as isize) && (0 <= y && y < size.height as isize) {
-            self.0[(y as usize) * size.width + x as usize + 1] = color.0;
+            self.0[(y as usize) * size.width + x as usize] = color.0;
         }
     }
 

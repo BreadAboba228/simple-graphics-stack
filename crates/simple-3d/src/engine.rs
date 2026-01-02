@@ -1,8 +1,10 @@
-use minifb::Window;
-use simple_linear_algebra_rs::{matrix::matrix4::Matrix4, vector::{Vector, quaternion::Quaternion, vec2::Vec2}};
-use simple_render_rs::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+use std::ops::Mul;
 
-use crate::{camera::Camera, scene::Scene, shape::{AngleUnit, Shape}};
+use minifb::Window;
+use simple_linear_algebra::{matrix::matrix4::Matrix4, vector::{Vector, quaternion::Quaternion, vec2::Vec2}};
+use simple_render::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+
+use crate::{engine::render_cache::RenderCache, scene::Scene, shape::AngleUnit};
 
 pub mod render_cache;
 
@@ -12,7 +14,7 @@ pub struct Engine {
     buffer_size: BufferSize,
     quater: Quaternion<f64>,
     matrix: Matrix4<f64>,
-    vertexes_pool: Vec::<Vec2<isize>>,
+    render_cache: RenderCache
 }
 
 impl Engine {
@@ -21,11 +23,13 @@ impl Engine {
         color: Color,
         buffer_size: BufferSize,
         angles: &[AngleUnit],
-        matrix: Matrix4<f64>,
+        matrix: Matrix4<f64>
     ) -> Self {
         let quater = AngleUnit::unification_to_quater(angles).to_normalized();
-        let vertexes_pool = Vec::with_capacity(shape.vertexes().len());
-        Self { shape, color, buffer_size, quater, matrix, vertexes_pool, camera }
+
+        let render_cache = RenderCache::init(scene.shapes());
+
+        Self { scene, color, buffer_size, quater, matrix, render_cache }
     }
 
     pub fn run(&mut self, fps: f64, window: Window) {
@@ -52,29 +56,49 @@ impl Engine {
 
 impl AppHandler for Engine {
     fn redraw(&mut self, buffer: &mut Buffer) {
-        let vertexes = self.shape.vertexes();
+        let shapes = self.scene.shapes();
 
-        for i in vertexes {
-            let vertex3 = (self.camera.to_displacement_matrix() * (*i).into_lifted()).into_vec3();
-            let vertex3 = vertex3.to_raw_rotated(self.camera.to_rotation_quaternion().to_normalized());
-            let vertex3 = self.matrix * vertex3.into_lifted();
-            let vertex2 = self.to_real(vertex3.to_projected().into_vec2());
-            self.vertexes_pool.push(vertex2);
+        for (index, shape) in shapes.iter().enumerate() {
+            for vertex in shape.vertexes() {
+                let vertex4 = vertex.into_lifted();
+
+                let vertex3 = self.matrix.mul(
+                    self.scene.camera
+                        .to_displacement_matrix()
+                        .mul(vertex4)
+                        .set_w(0.0)
+                        .to_rotated(self.scene.camera.to_rotation_quaternion())
+                        .set_w(1.0)
+                )
+                    .to_projected()
+                    .into_vec3();
+
+                let vertex2 = self.to_real(
+                    vertex3
+                        .to_projected()
+                        .into_vec2()
+                );
+
+                self.render_cache.push(index, vertex2);
+            }
         }
 
         buffer.fill(Color::new(0));
 
-        for edge in self.shape.edges() {
-            let start = self.vertexes_pool[edge.0];
+        for (index, shape) in self.scene.shapes().iter().enumerate() {
+            for edge in shape.edges() {
+                let start = self.render_cache.get(index, edge.0);
 
-            let end = self.vertexes_pool[edge.1];
+                let end = self.render_cache.get(index, edge.1);
 
-            //TODO: replace isize with usize in draw_line
-            buffer.draw_line(self.buffer_size, start, end, self.color);
+                //TODO: replace isize with usize in draw_line
+                buffer.draw_line(self.buffer_size, start, end, self.color);
+            }
         }
 
-        self.shape.raw_rotate(self.quater);
-        self.vertexes_pool.clear();
+        self.scene.raw_rotate_shapes(self.quater);
+
+        self.render_cache.clear();
     }
 
 

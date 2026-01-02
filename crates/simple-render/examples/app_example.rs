@@ -1,5 +1,5 @@
 use minifb::{Window, WindowOptions};
-use simple_render_rs::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+use simple_render::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
 
 struct App(BufferSize, Color);
 
@@ -9,11 +9,9 @@ impl AppHandler for App {
     }
 
     fn redraw(&mut self, buffer: &mut Buffer) {
-        use simple_linear_algebra_rs::vector::vec2::Vec2;
-        use simple_render_rs::color::Color;
+        use simple_linear_algebra::vector::vec2::Vec2;
 
-        //black
-        buffer.fill(Color::new(0));
+        buffer.fill(Color::BLACK);
 
         buffer.draw_line(self.0, Vec2::new(self.0.width as isize, self.0.height as isize), Vec2::new(1, 1), self.1);
     }

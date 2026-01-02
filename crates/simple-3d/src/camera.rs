@@ -1,4 +1,4 @@
-use simple_linear_algebra_rs::{matrix::{Unit, matrix4::Matrix4}, num_traits::Zero, vector::{quaternion::Quaternion, vec3::Vec3}};
+use simple_linear_algebra::{matrix::{Unit, matrix4::Matrix4}, num_traits::Zero, vector::{Vector, quaternion::Quaternion, vec3::Vec3}};
 
 use crate::shape::AngleUnit;
 
@@ -13,13 +13,14 @@ impl Camera {
     }
 
     pub fn from_angles(pos: Vec3<f64>, angles: &[AngleUnit]) -> Self {
-        let quaternion = AngleUnit::unification_to_quater(angles);
+        let quaternion = AngleUnit::unification_to_quater(angles)
+            .to_normalized();
 
         Self::new(pos, quaternion)
     }
 
-    pub fn raw_rotate(&self, quaternion: Quaternion<f64>) -> Self {
-        let quaternion = self.quaternion * quaternion;
+    pub fn raw_rotate(&self, quater: Quaternion<f64>) -> Self {
+        let quaternion = self.quaternion * quater;
 
         Self::new(self.pos, quaternion)
     }
@@ -31,7 +32,7 @@ impl Camera {
     }
 
     pub fn to_displacement_matrix(&self) -> Matrix4<f64> {
-        (self.pos * -1.0).to_displacement_matrix()
+        (-self.pos).to_displacement_matrix()
     }
 
     pub fn to_rotation_quaternion(&self) -> Quaternion<f64> {

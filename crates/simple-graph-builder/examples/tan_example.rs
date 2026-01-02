@@ -1,8 +1,8 @@
 //!failed
 
-use graph_builder_rs::Builder;
+use simple_graph_builder::Builder;
 use minifb::{Window, WindowOptions};
-use simple_render_rs::{color::Color, render::buffer::BufferSize};
+use simple_render::{color::Color, render::buffer::BufferSize};
 
 fn main() {
     let size = BufferSize::new(60, 320);

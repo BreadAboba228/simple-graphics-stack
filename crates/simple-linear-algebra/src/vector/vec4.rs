@@ -125,6 +125,16 @@ impl<T: Copy + Zero + One> Vec4<T> {
     pub const W: Self = Self::new(T::ZERO, T::ZERO, T::ZERO, T::ONE);
 }
 
+impl<T: Copy + Mul<Output = T> + Add<Output = T> + Sub<Output = T> + Neg<Output = T>> Vec4<T> {
+    pub fn rotate(&mut self, quater: Quaternion<T>) {
+        *self = self.to_rotated(quater)
+    }
+
+    pub fn to_rotated(&self, quater: Quaternion<T>) -> Self {
+        (quater * self.into_quater() * quater.to_conjugated()).into_vec4()
+    }
+}
+
 impl<T: Copy + Zero> Zero for Vec4<T> {
     const ZERO: Self = Self::splat(T::ZERO);
 }

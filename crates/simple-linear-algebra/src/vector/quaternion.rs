@@ -135,6 +135,16 @@ impl<T: Copy + SinCos + Two + Div<Output = T> + Mul<Output = T>> Quaternion<T> {
     }
 }
 
+impl<T: Copy + Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Neg<Output = T>> Quaternion<T> {
+    pub fn rotate(&mut self, quater: Quaternion<T>) {
+        *self = self.to_rotated(quater);
+    }
+
+    pub fn to_rotated(&self, quater: Quaternion<T>) -> Self {
+        quater * (*self) * quater.to_conjugated()
+    }
+}
+
 impl<T: Copy + One + Zero> Unit for Quaternion<T> {
     const UNIT: Self = Vec3::ZERO.extend_to_quater(T::ONE);
 }

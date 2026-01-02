@@ -1,9 +1,9 @@
 [package]
-name = "simple-3d-rs"
-version = "0.1.0"
-edition = "2024"
+name = "simple-3d"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-simple-linear-algebra-rs = { git = "https://github.com/BreadAboba228/simple-linear-algebra-rs" }
-simple-render-rs = { git = "https://github.com/BreadAboba228/simple-render-rs" }
-minifb = "0.28.0"
+minifb.workspace = true
+simple-linear-algebra = { path = "../simple-linear-algebra" }
+simple-render = { path = "../simple-render" }

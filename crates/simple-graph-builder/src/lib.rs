@@ -1,6 +1,6 @@
 use minifb::Window;
-use simple_linear_algebra_rs::vector::vec2::Vec2;
-use simple_render_rs::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+use simple_linear_algebra::vector::vec2::Vec2;
+use simple_render::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
 
 pub struct Builder {
     size: BufferSize,
