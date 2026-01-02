@@ -6,13 +6,13 @@ use crate::color::Color;
 
 #[derive(Clone, Copy)]
 pub struct BufferSize {
-    pub height: usize,
     pub width: usize,
+    pub height: usize,
 }
 
 impl BufferSize {
-    pub const fn new(height: usize, width: usize) -> Self {
-        Self { height, width }
+    pub const fn new(width: usize, height: usize) -> Self {
+        Self { width, height }
     }
 }
 
@@ -26,6 +26,14 @@ impl Buffer {
 
     pub fn fill(&mut self, color: Color) {
         self.0.fill(color.0);
+    }
+
+    pub fn draw_point(&mut self, point: Vec2<isize>, color: Color, size: BufferSize) {
+        let Vec2 { x, y } = point;
+
+        if (0 <= x && x < size.width as isize) && (0 <= y && y < size.height as isize) {
+            self.0[(y as usize) * size.width + x as usize + 1] = color.0;
+        }
     }
 
     pub fn draw_line(
@@ -52,10 +60,7 @@ impl Buffer {
         let mut err = delta_x - delta_y;
 
         loop {
-            if (0 <= x1 && x1 < size.width as isize) &&
-            (0 <= y1 && y1 < size.height as isize) {
-                self.0[((y1 as usize).saturating_sub(1) * size.width + x1 as usize).saturating_sub(1)] = color.0
-            }
+            self.draw_point(Vec2::new(x1, y1), color, size);
 
             if x1 == x2 && y1 == y2 {
                 break;
