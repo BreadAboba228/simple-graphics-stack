@@ -497,7 +497,7 @@ dependencies = [
 [[package]]
 name = "simple-linear-algebra-rs"
 version = "0.1.0"
-source = "git+https://github.com/BreadAboba228/simple-linear-algebra-rs#89f1d5c4f14aa460b2604ac53459c4644be0386b"
+source = "git+https://github.com/BreadAboba228/simple-linear-algebra-rs#837675d497a17c782da8e921b6add8a6e582e0be"
 
 [[package]]
 name = "simple-render-rs"

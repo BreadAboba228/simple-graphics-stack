@@ -1,4 +1,6 @@
-use simple_linear_algebra_rs::{matrix::Unit, vector::{Axis, quaternion::Quaternion, vec3::Vec3}};
+use std::ops::Mul;
+
+use simple_linear_algebra_rs::{matrix::{Unit, matrix4::Matrix4}, vector::{Axis, Vector, quaternion::Quaternion, vec3::Vec3}};
 
 pub mod cube;
 
@@ -16,7 +18,7 @@ impl AngleUnit {
     pub fn to_quater(&self) -> Quaternion<f64> {
         let rad = self.1.to_radians();
         let axis = self.0.to_vec();
-        Quaternion::rotator(rad, axis)
+        Quaternion::from_angle(rad, axis)
     }
 
     pub fn unification_to_quater(angles: &[AngleUnit]) -> Quaternion<f64> {
@@ -54,13 +56,17 @@ impl Shape {
         &self.vertexes
     }
 
+    pub fn mut_vertexes(&mut self) -> &mut [Vec3<f64>] {
+        &mut self.vertexes
+    }
+
     pub fn center(&self) -> &Vec3<f64> {
         &self.center
     }
 
     pub fn raw_rotate(&mut self, quaternion: Quaternion<f64>) {
         for i in &mut self.vertexes {
-            *i = (*i - self.center).raw_rotate(quaternion) + self.center
+            *i = (*i - self.center).to_raw_rotated(quaternion) + self.center
         }
     }
 
@@ -68,8 +74,33 @@ impl Shape {
 
         let mut q = AngleUnit::unification_to_quater(angles);
 
-        q = q.to_normalized();
+        q.normalize();
 
         self.raw_rotate(q);
+    }
+
+    pub fn into_projected_vertexes(&self) -> Vec<Vec3<f64>> {
+        let mut vec = self.vertexes.clone();
+
+        for i in &mut vec {
+            *i = *i + self.center;
+        }
+
+        vec
+    }
+}
+
+impl Mul<Shape> for Matrix4<f64> {
+    type Output = Shape;
+
+    fn mul(self, rhs: Shape) -> Self::Output {
+        let mut rhs = rhs;
+        for vec in &mut rhs.vertexes {
+            *vec = (self * (*vec).into_lifted())
+                .to_projected()
+                .into_vec3();
+        }
+
+        rhs
     }
 }

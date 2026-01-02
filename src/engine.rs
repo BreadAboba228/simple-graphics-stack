@@ -1,31 +1,31 @@
 use minifb::Window;
-use simple_linear_algebra_rs::{matrix::matrix4::Matrix4, vector::{quaternion::Quaternion, vec2::Vec2}};
+use simple_linear_algebra_rs::{matrix::matrix4::Matrix4, vector::{Vector, quaternion::Quaternion, vec2::Vec2}};
 use simple_render_rs::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
 
-use crate::engine::shape::{AngleUnit, Shape};
+use crate::{camera::Camera, scene::Scene, shape::{AngleUnit, Shape}};
 
-pub mod shape;
+pub mod render_cache;
 
 pub struct Engine {
-    shape: Shape,
+    scene: Scene,
     color: Color,
     buffer_size: BufferSize,
     quater: Quaternion<f64>,
     matrix: Matrix4<f64>,
-    vertexes_pool: Vec::<Vec2<isize>>
+    vertexes_pool: Vec::<Vec2<isize>>,
 }
 
 impl Engine {
     pub fn new(
-        shape: Shape,
+        scene: Scene,
         color: Color,
         buffer_size: BufferSize,
         angles: &[AngleUnit],
-        matrix: Matrix4<f64>
+        matrix: Matrix4<f64>,
     ) -> Self {
         let quater = AngleUnit::unification_to_quater(angles).to_normalized();
         let vertexes_pool = Vec::with_capacity(shape.vertexes().len());
-        Self { shape, color, buffer_size, quater, matrix, vertexes_pool }
+        Self { shape, color, buffer_size, quater, matrix, vertexes_pool, camera }
     }
 
     pub fn run(&mut self, fps: f64, window: Window) {
@@ -55,8 +55,10 @@ impl AppHandler for Engine {
         let vertexes = self.shape.vertexes();
 
         for i in vertexes {
-            let vertex3 = (self.matrix * (*i).to_homogeneous()).to_affine();
-            let vertex2 = self.to_real(vertex3.to_affine());
+            let vertex3 = (self.camera.to_displacement_matrix() * (*i).into_lifted()).into_vec3();
+            let vertex3 = vertex3.to_raw_rotated(self.camera.to_rotation_quaternion().to_normalized());
+            let vertex3 = self.matrix * vertex3.into_lifted();
+            let vertex2 = self.to_real(vertex3.to_projected().into_vec2());
             self.vertexes_pool.push(vertex2);
         }
 

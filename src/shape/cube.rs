@@ -1,6 +1,6 @@
 use simple_linear_algebra_rs::vector::vec3::Vec3;
 
-use crate::engine::shape::{EdgeUnit, Shape};
+use crate::shape::{EdgeUnit, Shape};
 
 #[derive(Clone)]
 pub struct Cube {
