@@ -48,3 +48,28 @@ pub trait AxisUnits {
     const Y: Self;
     const Z: Self;
 }
+
+#[macro_export]
+macro_rules! impl_assign {
+    ($t:ty) => {
+        use std::ops::{AddAssign, SubAssign, MulAssign};
+
+        impl<T: Copy + Add<Output = T>> AddAssign for $t {
+            fn add_assign(&mut self, rhs: Self) {
+                *self = *self + rhs;
+            }
+        }
+
+        impl<T: Copy + Sub<Output = T>> SubAssign for $t {
+            fn sub_assign(&mut self, rhs: Self) {
+                *self = *self - rhs;
+            }
+        }
+
+        impl<T: Copy + Mul<Output = T>> MulAssign for $t {
+            fn mul_assign(&mut self, rhs: Self) {
+                *self = *self * rhs;
+            }
+        }
+    };
+}

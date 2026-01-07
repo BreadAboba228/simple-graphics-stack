@@ -1,10 +1,10 @@
 use std::usize;
 
-use simple_linear_algebra::vector::vec2::Vec2;
+use simple_linear_algebra::vector::{vec2::Vec2, vec3::Vec3};
 
 use crate::color::Color;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, PartialOrd)]
 pub struct BufferSize {
     pub width: usize,
     pub height: usize,
@@ -14,8 +14,13 @@ impl BufferSize {
     pub const fn new(width: usize, height: usize) -> Self {
         Self { width, height }
     }
+
+    pub const fn from_get_size(size: (usize, usize)) -> Self {
+        Self::new(size.0, size.1)
+    }
 }
 
+#[derive(Clone)]
 pub struct Buffer(pub Vec<u32>);
 
 impl Buffer {
@@ -76,6 +81,48 @@ impl Buffer {
             if double_err < delta_x {
                 err += delta_x;
                 y1 += step_y;
+            }
+        }
+    }
+
+    pub fn draw_triangle(&mut self, triangle: Vec3<Vec2<isize>>, size: BufferSize, color: Color) {
+        self.draw_line(size, triangle.x, triangle.y, color);
+        self.draw_line(size, triangle.x, triangle.z, color);
+        self.draw_line(size, triangle.y, triangle.z, color);
+    }
+
+    pub fn is_on_plain(line: Vec2<Vec2<isize>>, point: Vec2<isize>) -> bool {
+        let e = (point.x - line.x.x) * (line.y.y - line.x.y) - (point.y - line.x.y) * (line.y.x - line.x.x);
+        if e >= 0 {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn is_inside_triangle(triangle: Vec3<Vec2<isize>>, point: Vec2<isize>) -> bool {
+        Self::is_on_plain(Vec2::new(triangle.x, triangle.y), point) &&
+        Self::is_on_plain(Vec2::new(triangle.y, triangle.z), point) &&
+        Self::is_on_plain(Vec2::new(triangle.z, triangle.x), point)
+    }
+
+    pub fn fill_triangle(&mut self, triangle: Vec3<Vec2<isize>>, size: BufferSize, color: Color) {
+        let x_list = [triangle.x.x, triangle.y.x, triangle.z.x];
+        let y_list = [triangle.x.y, triangle.y.y, triangle.z.y];
+
+        let min_x = x_list.iter().min().unwrap();
+        let max_x = x_list.iter().max().unwrap();
+
+        let min_y = y_list.iter().min().unwrap();
+        let max_y = y_list.iter().max().unwrap();
+
+        for y in *min_y..=*max_y {
+            for x in *min_x..=*max_x {
+                let point = Vec2::new(x, y);
+
+                if Self::is_inside_triangle(triangle, point) {
+                    self.draw_point(point, color, size);
+                }
             }
         }
     }

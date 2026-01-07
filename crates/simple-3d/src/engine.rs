@@ -1,8 +1,8 @@
-use std::ops::Mul;
+use std::{ops::Mul, sync::{Arc, Mutex}, thread};
 
-use minifb::Window;
-use simple_linear_algebra::{matrix::matrix4::Matrix4, vector::{Vector, quaternion::Quaternion, vec2::Vec2}};
-use simple_render::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+use minifb::{Key, Window};
+use simple_linear_algebra::{num_traits::Zero, vector::{Axis, Vector, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
+use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
 
 use crate::{engine::render_cache::RenderCache, scene::Scene, shape::AngleUnit};
 
@@ -11,98 +11,168 @@ pub mod render_cache;
 pub struct Engine {
     scene: Scene,
     color: Color,
-    buffer_size: BufferSize,
     quater: Quaternion<f64>,
-    matrix: Matrix4<f64>,
-    render_cache: RenderCache
+    render_cache: RenderCache,
+    need_to_redraw: bool
 }
 
 impl Engine {
     pub fn new(
         scene: Scene,
         color: Color,
-        buffer_size: BufferSize,
         angles: &[AngleUnit],
-        matrix: Matrix4<f64>
+        size: BufferSize
     ) -> Self {
         let quater = AngleUnit::unification_to_quater(angles).to_normalized();
 
-        let render_cache = RenderCache::init(scene.shapes());
+        let render_cache = RenderCache::init(scene.shapes(), size);
 
-        Self { scene, color, buffer_size, quater, matrix, render_cache }
+        let need_to_redraw = true;
+
+        Self { scene, color, quater, render_cache, need_to_redraw }
     }
 
-    pub fn run(&mut self, fps: f64, window: Window) {
-        let mut render = Render::new(self, fps, window);
+    pub fn event_loop(&mut self) {
+        self.scene.raw_rotate_shapes(self.quater);
+    }
+
+    pub fn run(self, fps: f64, window: Window) {
+        let clone = Arc::new(Mutex::new(self));
+        let clone2 = clone.clone();
+
+        let mut render = Render::new(clone, fps, window);
+
+        let tick = 1.0 / fps;
+
+        thread::spawn(move || {
+            loop {
+                clone2.lock().unwrap()
+                    .event_loop();
+
+                wait(tick);
+            }
+        });
 
         render.run();
     }
 
-    pub fn to_real(&self, vec: Vec2<f64>) -> Vec2<isize> {
+    pub fn to_real(&self, vec: Vec2<f64>, size: BufferSize) -> Vec2<isize> {
         //[-1; 1] + 1 -> [0; 2]
         // [0; 2] / 2 -> [0; 1]
         // [0; 1] * width -> [0; width]
-        let x = ((vec.x + 1.0) / 2.0) * self.buffer_size.width as f64;
+        let x = ((vec.x + 1.0) / 2.0) * size.width as f64;
 
         //[-1; 1] + 1 -> [0; 2]
         // [0; 2] / 2 -> [0; 1]
-        // 1.0 - [0; 1] -> [1; 0] (axis reversal)
         // [1; 0] * height -> [height; 0]
-        let y =  (1.0 - (vec.y + 1.0) / 2.0) * self.buffer_size.height as f64;
+        let y =  (vec.y + 1.0) / 2.0 * size.height as f64;
 
         Vec2::new(x as isize, y as isize)
     }
 }
 
 impl AppHandler for Engine {
-    fn redraw(&mut self, buffer: &mut Buffer) {
-        let shapes = self.scene.shapes();
+    fn event(&mut self, event: Event) {
+        match event {
+            Event::RedrawReqiest { buffer, size } => {
+                let shapes = self.scene.shapes();
 
-        for (index, shape) in shapes.iter().enumerate() {
-            for vertex in shape.vertexes() {
-                let vertex4 = vertex.into_lifted();
+                if self.render_cache.matrix_size() != size {
+                    self.render_cache.reload_matrix(size);
+                }
 
-                let vertex3 = self.matrix.mul(
-                    self.scene.camera
-                        .to_displacement_matrix()
-                        .mul(vertex4)
-                        .set_w(0.0)
-                        .to_rotated(self.scene.camera.to_rotation_quaternion())
-                        .set_w(1.0)
-                )
-                    .to_projected()
-                    .into_vec3();
+                for (index, shape) in shapes.iter().enumerate() {
+                    for vertex in shape.vertexes() {
+                        let vertex4 = vertex.into_lifted();
 
-                let vertex2 = self.to_real(
-                    vertex3
-                        .to_projected()
-                        .into_vec2()
-                );
+                        let vertex3 = self.render_cache.matrix().mul(
+                            self.scene.camera
+                                .to_displacement_matrix()
+                                .mul(vertex4)
+                                .set_w(0.0)
+                                .to_rotated(self.scene.camera.to_rotation_quaternion())
+                                .set_w(1.0)
+                        )
+                            .to_projected()
+                            .into_vec3();
 
-                self.render_cache.push(index, vertex2);
+                        let vertex2 = self.to_real(
+                            vertex3
+                                .to_projected()
+                                .into_vec2(),
+                            size
+                        );
+
+                        self.render_cache.push(index, vertex2);
+                    }
+                }
+
+                buffer.fill(Color::new(0));
+
+                for (index, shape) in self.scene.shapes().iter().enumerate() {
+                    for edge in shape.edges() {
+                        let start = self.render_cache.get(index, edge.0);
+
+                        let end = self.render_cache.get(index, edge.1);
+
+                        //TODO: replace isize with usize in draw_line
+                        buffer.draw_line(size, start, end, self.color);
+                    }
+                }
+
+                self.render_cache.clear();
+            },
+
+            Event::KeyPressed { key } => {
+                self.need_to_redraw = true;
+                match key {
+                    Key::W => {
+                        self.scene.camera.pos += Vec3::ZERO.set_z(0.1).to_raw_rotated(*self.scene.camera.quater());
+                    }
+
+                    Key::S => {
+                        self.scene.camera.pos -= Vec3::ZERO.set_z(0.1).to_raw_rotated(*self.scene.camera.quater());
+                    }
+
+                    Key::A => {
+                        self.scene.camera.pos += Vec3::ZERO.set_x(0.1).to_raw_rotated(*self.scene.camera.quater())
+                    }
+
+                    Key::D => {
+                        self.scene.camera.pos -= Vec3::ZERO.set_x(0.1).to_raw_rotated(*self.scene.camera.quater());
+                    }
+
+                    Key::Space => {
+                        self.scene.camera.pos += Vec3::ZERO.set_y(0.1).to_raw_rotated(*self.scene.camera.quater());
+                    }
+
+                    Key::LeftShift => {
+                        self.scene.camera.pos -= Vec3::ZERO.set_y(0.1).to_raw_rotated(*self.scene.camera.quater());
+                    }
+
+                    Key::Up => {
+                        self.scene.camera.rotate(&[AngleUnit(Axis::X, -0.5)]);
+                    }
+
+                    Key::Down => {
+                        self.scene.camera.rotate(&[AngleUnit(Axis::X, 0.5)]);
+                    }
+
+                    Key::Left => {
+                        self.scene.camera.rotate(&[AngleUnit(Axis::Y, 0.5)]);
+                    }
+
+                    Key::Right => {
+                        self.scene.camera.rotate(&[AngleUnit(Axis::Y, -0.5)]);
+                    }
+
+                    _ => (),
+                }
             }
         }
-
-        buffer.fill(Color::new(0));
-
-        for (index, shape) in self.scene.shapes().iter().enumerate() {
-            for edge in shape.edges() {
-                let start = self.render_cache.get(index, edge.0);
-
-                let end = self.render_cache.get(index, edge.1);
-
-                //TODO: replace isize with usize in draw_line
-                buffer.draw_line(self.buffer_size, start, end, self.color);
-            }
-        }
-
-        self.scene.raw_rotate_shapes(self.quater);
-
-        self.render_cache.clear();
     }
 
-
-    fn buffer_size(&self) -> BufferSize {
-        self.buffer_size
+    fn need_to_redraw(&self) -> bool {
+        self.need_to_redraw
     }
 }

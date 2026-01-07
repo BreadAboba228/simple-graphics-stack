@@ -1,7 +1,14 @@
+use minifb::Key;
+
 use crate::render::buffer::{Buffer, BufferSize};
 
 pub trait AppHandler {
-    fn redraw(&mut self, buffer: &mut Buffer);
+    fn event(&mut self, event: Event);
 
-    fn buffer_size(&self) -> BufferSize;
+    fn need_to_redraw(&self) -> bool;
+}
+
+pub enum Event<'a> {
+    KeyPressed { key: Key },
+    RedrawReqiest { buffer: &'a mut Buffer, size: BufferSize }
 }

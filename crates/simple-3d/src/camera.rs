@@ -4,12 +4,12 @@ use crate::shape::AngleUnit;
 
 pub struct Camera {
     pub pos: Vec3<f64>,
-    quaternion: Quaternion<f64>
+    quater: Quaternion<f64>
 }
 
 impl Camera {
-    pub const fn new(pos: Vec3<f64>, quaternion: Quaternion<f64>) -> Self {
-        Self { pos, quaternion }
+    pub const fn new(pos: Vec3<f64>, quater: Quaternion<f64>) -> Self {
+        Self { pos, quater }
     }
 
     pub fn from_angles(pos: Vec3<f64>, angles: &[AngleUnit]) -> Self {
@@ -19,16 +19,18 @@ impl Camera {
         Self::new(pos, quaternion)
     }
 
-    pub fn raw_rotate(&self, quater: Quaternion<f64>) -> Self {
-        let quaternion = self.quaternion * quater;
-
-        Self::new(self.pos, quaternion)
+    pub fn quater(&self) -> &Quaternion<f64> {
+        &self.quater
     }
 
-    pub fn rotate(&self, angles: &[AngleUnit]) -> Self {
-        let quaternion = AngleUnit::unification_to_quater(angles);
+    pub fn raw_rotate(&mut self, quater: Quaternion<f64>) {
+        self.quater = self.quater * quater;
+    }
 
-        self.raw_rotate(quaternion)
+    pub fn rotate(&mut self, angles: &[AngleUnit]) {
+        let quater = AngleUnit::unification_to_quater(angles);
+
+        self.raw_rotate(quater)
     }
 
     pub fn to_displacement_matrix(&self) -> Matrix4<f64> {
@@ -36,7 +38,7 @@ impl Camera {
     }
 
     pub fn to_rotation_quaternion(&self) -> Quaternion<f64> {
-        self.quaternion.to_conjugated()
+        self.quater.to_conjugated()
     }
 }
 

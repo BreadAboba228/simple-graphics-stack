@@ -1,47 +1,62 @@
+use std::sync::{Arc, Mutex};
+
 use minifb::Window;
 use simple_linear_algebra::vector::vec2::Vec2;
-use simple_render::{color::Color, render::{Render, app_handler::AppHandler, buffer::{Buffer, BufferSize}}};
+use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}}};
 
 pub struct Builder {
-    size: BufferSize,
     func: fn(isize) -> isize,
     color: Color,
+    need_to_redraw: bool
 }
 
 impl Builder {
-    pub fn new(size: BufferSize, func: fn(isize) -> isize, color: Color) -> Self {
-        Self { size, func, color }
+    pub fn new(func: fn(isize) -> isize, color: Color) -> Self {
+        Self { func, color, need_to_redraw: true }
     }
 
-    pub fn run(&mut self, fps: f64, window: Window) {
-        let mut render = Render::new(self, fps, window);
+    pub fn run(self, fps: f64, window: Window) {
+
+        let clone = Arc::new(Mutex::new(self));
+
+        let mut render = Render::new(clone, fps, window);
 
         render.run();
     }
 }
 
 impl AppHandler for Builder {
-    fn redraw(&mut self, buffer: &mut Buffer) {
-        let mut vec2_vec = Vec::<Vec2<isize>>::with_capacity(self.size.width);
+    fn event(&mut self, event: Event) {
+        match event {
+            Event::RedrawReqiest { buffer, size } => {
+                buffer.fill(Color::BLACK);
 
-        for x in 1..self.size.width as isize {
-            let y = self.size.height as isize - (self.func)(x);
+                let mut vec2_vec = Vec::<Vec2<isize>>::with_capacity(size.width);
 
-            let vec2 = Vec2::new(x, y / 2);
+                for x in 1..size.width as isize {
+                    let y = size.height as isize - (self.func)(x);
 
-            vec2_vec.push(vec2);
-        }
+                    let vec2 = Vec2::new(x, y / 2);
 
-        let mut iter = vec2_vec.iter().peekable();
+                    vec2_vec.push(vec2);
+                }
 
-        while let Some(vec) = iter.next() {
-            if let Some(&f) = iter.peek() {
-                buffer.draw_line(self.size, *vec, *f, self.color);
+                let mut iter = vec2_vec.iter().peekable();
+
+                while let Some(vec) = iter.next() {
+                    if let Some(&f) = iter.peek() {
+                        buffer.draw_line(size, *vec, *f, self.color);
+                    }
+                }
+
+                self.need_to_redraw = true;
             }
+
+            _ => ()
         }
     }
 
-    fn buffer_size(&self) -> BufferSize {
-        self.size
+    fn need_to_redraw(&self) -> bool {
+        self.need_to_redraw
     }
 }

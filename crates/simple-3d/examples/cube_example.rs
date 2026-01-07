@@ -5,19 +5,17 @@ use simple_render::color::Color;
 
 use simple_render::render::buffer::BufferSize;
 
-use simple_linear_algebra::{matrix::matrix4::Matrix4, vector::{Axis, AxisUnits, vec3::Vec3}};
+use simple_linear_algebra::vector::{Axis, AxisUnits, vec3::Vec3};
 
 use simple_3d::{engine::Engine, shape::{AngleUnit, cube::Cube}};
 
 fn main() {
     let cube1 = Cube::new(Vec3::Z * 3.0, 3.0);
-    let cube2 = Cube::new(Vec3::Z * 4.0 + Vec3::X * 3.0 - Vec3::Y * 3.0, 1.2);
+    let cube2 = Cube::new(Vec3::Z * 4.0 + Vec3::X * 3.0 + Vec3::Y * 2.0, 1.2);
 
     let size = BufferSize::new(1000, 1000);
 
     let angles = [AngleUnit::new(Axis::X, 0.5), AngleUnit::new(Axis::Y, 0.5), AngleUnit::new(Axis::Z, 0.5)];
-
-    let matrix = Matrix4::new_perspective(90.0, size.width as f64 / size.height as f64, 0.01, 100.0);
     //let matrix = Matrix4::UNIT;
 
     let mut option = WindowOptions::default();
@@ -30,7 +28,7 @@ fn main() {
 
     let scene = Scene::new(vec![cube1.create(), cube2.create()], camera);
 
-    let mut engine = Engine::new(scene, Color::WHITE, size, &angles, matrix);
+    let engine = Engine::new(scene, Color::WHITE, &angles, size);
 
     engine.run(120.0, window);
 }

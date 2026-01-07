@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::{matrix::matrix4::*, num_traits::{One, Sqrt, Zero}, vector::{AxisUnits, Vector, quaternion::*, vec2::*, vec4::*}};
+use crate::{impl_assign, matrix::matrix4::*, num_traits::{One, Sqrt, Zero}, vector::{AxisUnits, Vector, quaternion::*, vec2::*, vec4::*}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Vec3<T> {
@@ -233,3 +233,5 @@ impl<T: Copy + Zero> Vec3<T> {
         self.extend_to_quater(T::ZERO)
     }
 }
+
+impl_assign!(Vec3<T>);
