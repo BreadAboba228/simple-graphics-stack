@@ -28,13 +28,13 @@ impl Builder {
 impl AppHandler for Builder {
     fn event(&mut self, event: Event) {
         match event {
-            Event::RedrawReqiest { buffer, size } => {
+            Event::RedrawReqiest { buffer } => {
                 buffer.fill(Color::BLACK);
 
-                let mut vec2_vec = Vec::<Vec2<isize>>::with_capacity(size.width);
+                let mut vec2_vec = Vec::<Vec2<isize>>::with_capacity(buffer.size.width);
 
-                for x in 1..size.width as isize {
-                    let y = size.height as isize - (self.func)(x);
+                for x in 1..buffer.size.width as isize {
+                    let y = buffer.size.height as isize - (self.func)(x);
 
                     let vec2 = Vec2::new(x, y / 2);
 
@@ -45,7 +45,7 @@ impl AppHandler for Builder {
 
                 while let Some(vec) = iter.next() {
                     if let Some(&f) = iter.peek() {
-                        buffer.draw_line(size, *vec, *f, self.color);
+                        buffer.draw_line(*vec, *f, self.color);
                     }
                 }
 
@@ -58,5 +58,9 @@ impl AppHandler for Builder {
 
     fn need_to_redraw(&self) -> bool {
         self.need_to_redraw
+    }
+
+    fn redrawed(&mut self) {
+        self.need_to_redraw = false;
     }
 }

@@ -5,4 +5,5 @@ edition.workspace = true
 
 [dependencies]
 minifb.workspace = true
+png.workspace = true
 simple-linear-algebra = { path = "../simple-linear-algebra" }

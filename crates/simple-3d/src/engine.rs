@@ -34,6 +34,8 @@ impl Engine {
 
     pub fn event_loop(&mut self) {
         self.scene.raw_rotate_shapes(self.quater);
+
+        self.need_to_redraw = true;
     }
 
     pub fn run(self, fps: f64, window: Window) {
@@ -74,11 +76,11 @@ impl Engine {
 impl AppHandler for Engine {
     fn event(&mut self, event: Event) {
         match event {
-            Event::RedrawReqiest { buffer, size } => {
+            Event::RedrawReqiest { buffer } => {
                 let shapes = self.scene.shapes();
 
-                if self.render_cache.matrix_size() != size {
-                    self.render_cache.reload_matrix(size);
+                if self.render_cache.matrix_size() != buffer.size {
+                    self.render_cache.reload_matrix(buffer.size);
                 }
 
                 for (index, shape) in shapes.iter().enumerate() {
@@ -100,7 +102,7 @@ impl AppHandler for Engine {
                             vertex3
                                 .to_projected()
                                 .into_vec2(),
-                            size
+                            buffer.size
                         );
 
                         self.render_cache.push(index, vertex2);
@@ -116,7 +118,7 @@ impl AppHandler for Engine {
                         let end = self.render_cache.get(index, edge.1);
 
                         //TODO: replace isize with usize in draw_line
-                        buffer.draw_line(size, start, end, self.color);
+                        buffer.draw_line(start, end, self.color);
                     }
                 }
 
@@ -174,5 +176,9 @@ impl AppHandler for Engine {
 
     fn need_to_redraw(&self) -> bool {
         self.need_to_redraw
+    }
+
+    fn redrawed(&mut self) {
+        self.need_to_redraw = false;
     }
 }

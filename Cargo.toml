@@ -10,3 +10,4 @@ edition = "2024"
 
 [workspace.dependencies]
 minifb = "0.28.0"
+png = "0.18.0"

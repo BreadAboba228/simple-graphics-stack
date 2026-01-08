@@ -1,10 +1,10 @@
-use std::{sync::{Arc, Mutex}, thread};
+use std::{fs::File, path::Path, sync::{Arc, Mutex}, thread};
 
 use minifb::{Key, Window, WindowOptions};
 use simple_linear_algebra::vector::{vec2::Vec2, vec3::Vec3};
-use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
+use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}, image::Image, buffer::BufferSize, wait}};
 
-struct App(Color, bool);
+struct App(Color, bool, Image);
 
 impl AppHandler for App {
     fn event(&mut self, event: Event) {
@@ -24,14 +24,16 @@ impl AppHandler for App {
                 }
             },
 
-            Event::RedrawReqiest { buffer, size } => {
+            Event::RedrawReqiest { buffer } => {
                 buffer.fill(Color::BLACK);
 
-                buffer.draw_line(size, Vec2::new(800, 800), Vec2::new(1, 1), self.0);
+                buffer.draw_image(&self.2, Vec2::new(0, 0));
+
+                buffer.draw_line(Vec2::new(800, 800), Vec2::new(1, 1), self.0);
 
                 let triangle = Vec3::new(Vec2::new(0, 0), Vec2::new(100, 400), Vec2::new(700, 200));
 
-                buffer.fill_triangle(triangle, size, Color::GREEN);
+                buffer.fill_triangle(triangle, Color::GREEN);
             }
         }
     }
@@ -39,12 +41,22 @@ impl AppHandler for App {
     fn need_to_redraw(&self) -> bool {
         self.1
     }
+
+    fn redrawed(&mut self) {
+        self.1 = false;
+    }
 }
 
 fn main() {
     let size = BufferSize::new(1000, 1000);
 
-    let app = App(Color::from_rgb(0, 255, 255), false);
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/example_image.png");
+
+    let file = File::open(path).unwrap();
+
+    let image = Image::from_png(file).unwrap();
+
+    let app = App(Color::from_rgb(0, 255, 255), false, image);
 
     let mut options = WindowOptions::default();
     options.resize = true;
