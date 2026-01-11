@@ -63,7 +63,7 @@ impl<T: Copy + Add<Output = T> + Mul<Output = T>> Mul<Vec4<T>> for Matrix4<T> {
 }
 
 impl Matrix4<f64> {
-    pub fn new_perspective(fov: f64, aspect: f64, near: f64, far: f64) -> Matrix4<f64> {
+    pub fn persp_rh_matrix(fov: f64, aspect: f64, near: f64, far: f64) -> Matrix4<f64> {
         let f = 1.0 / (fov.to_radians() / 2.0).tan();
 
         Matrix4::row_major_new(
@@ -71,6 +71,19 @@ impl Matrix4<f64> {
             Vec4::new(0.0, f, 0.0, 0.0),
             Vec4::new(0.0, 0.0, (far + near) / (near - far), -1.0),
             Vec4::new(0.0, 0.0, (2.0 * far * near) / (near - far), 0.0)
+        )
+    }
+
+    pub fn persp_lh_matrix(fov: f64, aspect: f64, near: f64, far: f64) -> Matrix4<f64> {
+        let f = (fov.to_radians() / 2.0).tan();
+
+        let f_n = far - near;
+
+        Matrix4::row_major_new(
+            Vec4::new(1.0/f, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, aspect / f, 0.0, 0.0),
+            Vec4::new(0.0, 0.0, far / f_n, 1.0),
+            Vec4::new(0.0, 0.0, -(near * far) / f_n, 0.0)
         )
     }
 }

@@ -25,7 +25,7 @@ impl Engine {
     ) -> Self {
         let quater = AngleUnit::unification_to_quater(angles).to_normalized();
 
-        let render_cache = RenderCache::init(scene.shapes(), size);
+        let render_cache = RenderCache::init(scene.shapes(), size, &scene.camera);
 
         let need_to_redraw = true;
 
@@ -77,25 +77,27 @@ impl AppHandler for Engine {
     fn event(&mut self, event: Event) {
         match event {
             Event::RedrawReqiest { buffer } => {
+                self.render_cache.reload(buffer.size, &self.scene.camera);
+
                 let shapes = self.scene.shapes();
 
-                if self.render_cache.matrix_size() != buffer.size {
-                    self.render_cache.reload_matrix(buffer.size);
-                }
-
+                // iterate over all vertices and add the rendering cache to the pool
                 for (index, shape) in shapes.iter().enumerate() {
                     for vertex in shape.vertexes() {
                         let vertex4 = vertex.into_lifted();
 
-                        let vertex3 = self.render_cache.matrix().mul(
-                            self.scene.camera
-                                .to_displacement_matrix()
+                        // offset camera matrix mul vertex
+                        // rotate vertex by camera quater
+                        // project vertex into 3d
+                        // perspective matrix mul vertex
+                        // project vertex into 2d
+                        // to real coordinates
+                        let vertex3 = self.render_cache.persp_matrix().mul(
+                            self.render_cache.camera_disp_matrix()
                                 .mul(vertex4)
                                 .set_w(0.0)
-                                .to_rotated(self.scene.camera.to_rotation_quaternion())
-                                .set_w(1.0)
+                                .to_rotated(self.render_cache.camera_quater())
                         )
-                            .to_projected()
                             .into_vec3();
 
                         let vertex2 = self.to_real(
@@ -129,27 +131,27 @@ impl AppHandler for Engine {
                 self.need_to_redraw = true;
                 match key {
                     Key::W => {
-                        self.scene.camera.pos += Vec3::ZERO.set_z(0.1).to_raw_rotated(*self.scene.camera.quater());
+                        self.scene.camera.pos += Vec3::ZERO.set_z(0.1).to_raw_rotated(self.render_cache.camera_quater());
                     }
 
                     Key::S => {
-                        self.scene.camera.pos -= Vec3::ZERO.set_z(0.1).to_raw_rotated(*self.scene.camera.quater());
+                        self.scene.camera.pos -= Vec3::ZERO.set_z(0.1).to_raw_rotated(self.render_cache.camera_quater());
                     }
 
                     Key::A => {
-                        self.scene.camera.pos += Vec3::ZERO.set_x(0.1).to_raw_rotated(*self.scene.camera.quater())
+                        self.scene.camera.pos += Vec3::ZERO.set_x(0.1).to_raw_rotated(self.render_cache.camera_quater())
                     }
 
                     Key::D => {
-                        self.scene.camera.pos -= Vec3::ZERO.set_x(0.1).to_raw_rotated(*self.scene.camera.quater());
+                        self.scene.camera.pos -= Vec3::ZERO.set_x(0.1).to_raw_rotated(self.render_cache.camera_quater());
                     }
 
                     Key::Space => {
-                        self.scene.camera.pos += Vec3::ZERO.set_y(0.1).to_raw_rotated(*self.scene.camera.quater());
+                        self.scene.camera.pos += Vec3::ZERO.set_y(0.1).to_raw_rotated(self.render_cache.camera_quater());
                     }
 
                     Key::LeftShift => {
-                        self.scene.camera.pos -= Vec3::ZERO.set_y(0.1).to_raw_rotated(*self.scene.camera.quater());
+                        self.scene.camera.pos -= Vec3::ZERO.set_y(0.1).to_raw_rotated(self.render_cache.camera_quater());
                     }
 
                     Key::Up => {

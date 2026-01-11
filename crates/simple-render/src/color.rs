@@ -1,4 +1,4 @@
-use std::{ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign}, u32};
+use std::{ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign}, u8, u32};
 
 #[derive(Clone, Copy)]
 pub struct Color(pub u32);
@@ -20,9 +20,39 @@ impl Color {
 
     pub const BLACK: Self = Color::new(0);
     pub const WHITE: Self = Color::new(u32::MAX);
-    pub const RED: Self = Color::from_rgb(255, 0, 0);
-    pub const GREEN: Self = Color::from_rgb(0, 255, 0);
-    pub const BLUE: Self = Color::from_rgb(0, 0, 255);
+    pub const RED: Self = Color::from_rgb(u8::MAX, 0, 0);
+    pub const GREEN: Self = Color::from_rgb(0, u8::MAX, 0);
+    pub const BLUE: Self = Color::from_rgb(0, 0, u8::MAX);
+
+    pub const fn r(&self, r: u8) -> Self {
+        let (_, g, b) = self.to_rgb();
+
+        Self::from_rgb(r, g, b)
+    }
+
+    pub const fn g(&self, g: u8) -> Self {
+        let (r, _, b) = self.to_rgb();
+
+        Self::from_rgb(r, g, b)
+    }
+
+    pub const fn b(&self, b: u8) -> Self {
+        let (r, g, _) = self.to_rgb();
+
+        Self::from_rgb(r, g, b)
+    }
+
+    pub const fn mut_r(&mut self, r: u8) {
+        *self = self.r(r);
+    }
+
+    pub const fn mut_g(&mut self, g: u8) {
+        *self = self.g(g);
+    }
+
+    pub const fn mut_b(&mut self, b: u8) {
+        *self = self.b(b);
+    }
 }
 
 impl Add for Color {

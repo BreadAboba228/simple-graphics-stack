@@ -11,6 +11,7 @@ impl Image {
         Image(buffer)
     }
 
+    // Problems with RGB/RGBA
     pub fn from_png(file: File) -> Result<Self, DecodingError> {
         let decoder = Decoder::new(BufReader::new(file));
         let mut reader = decoder.read_info()?;
