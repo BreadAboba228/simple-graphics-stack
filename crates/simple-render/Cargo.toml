@@ -4,6 +4,14 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+wgpu.workspace = true
+winit.workspace = true
+bytemuck.workspace = true
 minifb.workspace = true
 png.workspace = true
+env_logger.workspace = true
+anyhow.workspace = true
+pollster.workspace = true
+log.workspace = true
 simple-linear-algebra = { path = "../simple-linear-algebra" }
+image.workspace = true
