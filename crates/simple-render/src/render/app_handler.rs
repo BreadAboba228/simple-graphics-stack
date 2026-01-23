@@ -1,6 +1,4 @@
-use minifb::Key;
-
-use crate::render::buffer::Buffer;
+use crate::render::{buffer::Buffer, render_backend::Key};
 
 pub trait AppHandler {
     fn event(&mut self, event: Event);

@@ -1,32 +1,31 @@
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 
-use minifb::Window;
-
-use crate::{color::Color, render::{app_handler::{AppHandler, Event}, buffer::{Buffer, BufferSize}}};
+use crate::{color::Color, render::{app_handler::{AppHandler, Event}, buffer::Buffer, render_backend::RenderBackend}};
 
 pub mod buffer;
 pub mod app_handler;
 pub mod image;
+pub mod render_backend;
 
 pub fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
 }
 
-pub struct Render<T> {
+pub struct Render<T, R: RenderBackend> {
     app: Arc<Mutex<T>>,
     fps: f64,
-    window: Window,
+    backend: R,
 }
 
-impl<'a, T: AppHandler + Send + Sync> Render<T> {
-    pub const fn new(app: Arc<Mutex<T>>, fps: f64, window: Window) -> Self {
-        Self { app, fps, window }
+impl<'a, T: AppHandler + Send + Sync, R: RenderBackend> Render<T, R> {
+    pub const fn new(app: Arc<Mutex<T>>, fps: f64, backend: R) -> Self {
+        Self { app, fps, backend }
     }
 
     pub fn run(&mut self) {
         let tick = 1.0 / self.fps;
 
-        let size = BufferSize::from_get_size(self.window.get_size());
+        let size = self.backend.get_size();
 
 
         let mut front = (Buffer::init(size), true);
@@ -35,22 +34,22 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
         self.app.lock().unwrap()
             .event(Event::RedrawReqiest { buffer: &mut front.0 } );
 
-        while self.window.is_open() {
-            let keys = self.window.get_keys();
-            let r_size = BufferSize::from_get_size(self.window.get_size());
+        while self.backend.is_running() {
+            let keys = self.backend.get_keys();
+            let curr_size = self.backend.get_size();
 
             thread::scope(|s| {
                 s.spawn(|| {
-                    let is_resized = back.0.size != r_size;
+                    let is_resized = back.0.size != curr_size;
 
                     if is_resized {
-                        let target_len = r_size.width * r_size.height;
+                        let target_len = curr_size.width * curr_size.height;
 
                         if target_len > back.0.raw_buffer.0.len() {
                             back.0.raw_buffer.0.resize(target_len, Color::BLACK.0);
                         }
 
-                        back.0.size = r_size;
+                        back.0.size = curr_size;
                     }
 
                     for key in keys {
@@ -72,9 +71,9 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
                 });
 
                 if front.1 {
-                    self.window.update_with_buffer(&front.0.raw_buffer.0, front.0.size.width, front.0.size.height).unwrap();
+                    self.backend.update_with_buffer(&front.0);
                 } else {
-                    self.window.update();
+                    self.backend.update();
                 }
 
                 wait(tick);
