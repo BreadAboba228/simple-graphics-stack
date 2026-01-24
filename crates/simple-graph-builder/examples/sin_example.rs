@@ -12,5 +12,5 @@ fn main() {
     options.resize = true;
     let window = Window::new("sin test", size.width, size.height, options).unwrap();
 
-    app.run(10.0, window);
+    app.run(120.0, window);
 }

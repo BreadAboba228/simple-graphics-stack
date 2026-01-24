@@ -37,20 +37,20 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
 
         while self.window.is_open() {
             let keys = self.window.get_keys();
-            let r_size = BufferSize::from_get_size(self.window.get_size());
+            let curr_size = BufferSize::from_get_size(self.window.get_size());
 
             thread::scope(|s| {
                 s.spawn(|| {
-                    let is_resized = back.0.size != r_size;
+                    let is_resized = back.0.size != curr_size;
 
                     if is_resized {
-                        let target_len = r_size.width * r_size.height;
+                        let target_len = curr_size.width * curr_size.height;
 
                         if target_len > back.0.raw_buffer.0.len() {
                             back.0.raw_buffer.0.resize(target_len, Color::BLACK.0);
                         }
 
-                        back.0.size = r_size;
+                        back.0.size = curr_size;
                     }
 
                     for key in keys {

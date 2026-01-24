@@ -21,8 +21,8 @@ impl BufferSize {
 impl From<BufferSize> for Vec2<Vec2<isize>> {
     fn from(value: BufferSize) -> Self {
         Vec2 {
-            x: Vec2::new(0, 0),
-            y: Vec2::new(value.width as isize, value.height as isize)
+            x: Vec2 { x: 0, y: 0 },
+            y: Vec2 { x: value.width as isize - 1, y: value.height as isize - 1 }
         }
     }
 }
@@ -154,7 +154,7 @@ impl Buffer {
         let mut err = delta_x - delta_y;
 
         loop {
-            self.draw_point(Vec2::new(x1, y1), color);
+            self.draw_point(Vec2 { x: x1, y: y1 }, color);
 
             if x1 == x2 && y1 == y2 {
                 break;
@@ -243,7 +243,7 @@ impl Buffer {
 
                 let img_point = Vec2::new(x, y);
 
-                self.draw_point(buf_point, Color::new(image.0.get_point(img_point)));
+                self.draw_point(buf_point, Color(image.0.get_point(img_point)));
             }
         }
     }

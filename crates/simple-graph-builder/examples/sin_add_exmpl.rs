@@ -11,9 +11,9 @@ fn main() {
 
     let mut options = WindowOptions::default();
     options.resize = true;
-    let window = Window::new("sin test", size.width, size.height, options).unwrap();
+    let window = Window::new("sin add test", size.width, size.height, options).unwrap();
 
-    app.run(60.0, window);
+    app.run(120.0, window);
 }
 
 fn func1(x: isize) -> isize {

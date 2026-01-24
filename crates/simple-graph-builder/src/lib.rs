@@ -33,8 +33,8 @@ impl AppHandler for Builder {
 
                 let mut vec2_vec = Vec::<Vec2<isize>>::with_capacity(buffer.size.width);
 
-                for x in 1..buffer.size.width as isize {
-                    let y = buffer.size.height as isize - (self.func)(x);
+                for x in 0..buffer.size.width as isize {
+                    let y = (buffer.size.height as isize - 1) - (self.func)(x);
 
                     let vec2 = Vec2::new(x, y / 2);
 
@@ -45,11 +45,9 @@ impl AppHandler for Builder {
 
                 while let Some(vec) = iter.next() {
                     if let Some(&f) = iter.peek() {
-                        buffer.draw_line(*vec, *f, self.color);
+                        buffer.accuracy_draw_line(*vec, *f, self.color);
                     }
                 }
-
-                self.need_to_redraw = true;
             }
 
             _ => ()

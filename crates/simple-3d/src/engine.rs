@@ -120,7 +120,7 @@ impl AppHandler for Engine {
                         let end = self.render_cache.get(index, edge.1);
 
                         //TODO: replace isize with usize in draw_line
-                        buffer.draw_line(start, end, self.color);
+                        buffer.accuracy_draw_line(start, end, self.color);
                     }
                 }
 
