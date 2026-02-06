@@ -50,15 +50,15 @@ impl AppHandler for Builder {
                 }
             }
 
+            Event::Redrawed => {
+                self.need_to_redraw = false;
+            }
+
             _ => ()
         }
     }
 
     fn need_to_redraw(&self) -> bool {
         self.need_to_redraw
-    }
-
-    fn redrawed(&mut self) {
-        self.need_to_redraw = false;
     }
 }

@@ -9,18 +9,20 @@ struct App(Color, bool, Image);
 impl AppHandler for App {
     fn event(&mut self, event: Event) {
         match event {
-            Event::KeyPressed { key } => {
+            Event::KeyPressed { keys } => {
                 self.1 = true;
-                match key {
-                    Key::W => {
-                        self.0.0 += 1;
-                    },
+                for key in keys {
+                    match key {
+                        Key::W => {
+                            self.0.0 += 1;
+                        },
 
-                    Key::S => {
-                        self.0.0 -= 1;
-                    },
+                        Key::S => {
+                            self.0.0 -= 1;
+                        },
 
-                    _ => (),
+                        _ => (),
+                    }
                 }
             },
 
@@ -45,16 +47,18 @@ impl AppHandler for App {
                 };
 
                 buffer.fill_rectangle(rectangle, Color::RED);
+            },
+
+            Event::Redrawed => {
+                self.1 = false
             }
+
+            _ => (),
         }
     }
 
     fn need_to_redraw(&self) -> bool {
         self.1
-    }
-
-    fn redrawed(&mut self) {
-        self.1 = false;
     }
 }
 

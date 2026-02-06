@@ -1,6 +1,6 @@
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 
-use minifb::Window;
+use minifb::{MouseButton, Window};
 
 use crate::{color::Color, render::{app_handler::{AppHandler, Event}, buffer::{Buffer, BufferSize}}};
 
@@ -38,6 +38,8 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
         while self.window.is_open() {
             let keys = self.window.get_keys();
             let curr_size = BufferSize::from_get_size(self.window.get_size());
+            let mouse_pos = self.window.get_mouse_pos(minifb::MouseMode::Discard);
+            let mouse_button = self.window.get_mouse_down(minifb::MouseButton::Left);
 
             thread::scope(|s| {
                 s.spawn(|| {
@@ -52,14 +54,19 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
 
                         back.0.size = curr_size;
                     }
+                    self.app.lock().unwrap()
+                        .event(Event::MousePressed { button: MouseButton::Left, pressed: mouse_button });
 
-                    for key in keys {
-                        self.app.lock().unwrap()
-                            .event(Event::KeyPressed { key });
+                    self.app.lock().unwrap()
+                        .event(Event::KeyPressed { keys });
+
+
+                    if let Some(pos) = mouse_pos {
+                        self.app.lock().unwrap().event(Event::MousePos { pos });
                     }
 
                     back.1 = if self.app.lock().unwrap().need_to_redraw() {
-                        self.app.lock().unwrap().redrawed();
+                        self.app.lock().unwrap().event(Event::Redrawed);
                         true
                     } else {
                         is_resized
