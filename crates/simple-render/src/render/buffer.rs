@@ -226,8 +226,8 @@ impl Buffer {
         let Vec2 { x: min_x, y: min_y } = rect.x;
         let Vec2 { x: max_x, y: max_y } = rect.y;
 
-        for y in min_y..=max_y {
-            for x in min_x..=max_x {
+        for x in min_x..=max_x {
+            for y in min_y..=max_y {
                 self.draw_point(Vec2::new(x, y), color);
             }
         }
@@ -286,9 +286,9 @@ pub fn rectangles_intersection(rect_1: Vec2<Vec2<isize>>, rect_2: Vec2<Vec2<isiz
 
     let &y1 = [rect_1.x.y, rect_2.x.y].iter().max().unwrap();
 
-    let &x2 = [rect_1.y.x, rect_2.y.x].iter().max().unwrap();
+    let &x2 = [rect_1.y.x, rect_2.y.x].iter().min().unwrap();
 
-    let &y2 = [rect_1.y.y, rect_2.y.y].iter().max().unwrap();
+    let &y2 = [rect_1.y.y, rect_2.y.y].iter().min().unwrap();
 
     Vec2::new(
         Vec2::new(x1, y1),

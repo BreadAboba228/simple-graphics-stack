@@ -42,8 +42,8 @@ impl AppHandler for App {
                 buffer.fill_triangle(triangle, Color::GREEN);
 
                 let rectangle = Vec2 {
-                    x: Vec2::new((buffer.size.width / 2) as isize, (buffer.size.height / 2) as isize),
-                    y: Vec2::new(buffer.size.width as isize, buffer.size.height as isize)
+                    y: Vec2::new((buffer.size.width / 2) as isize, (buffer.size.height / 2) as isize),
+                    x: Vec2::new(0, 0)
                 };
 
                 buffer.fill_rectangle(rectangle, Color::RED);

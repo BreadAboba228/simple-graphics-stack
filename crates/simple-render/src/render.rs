@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Mutex}, thread, time::Duration};
+use std::{sync::{Arc, Mutex}, thread, time::{Duration, Instant}};
 
 use minifb::Window;
 
@@ -31,7 +31,6 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
     }
 
     pub fn run(&mut self) {
-        let tick = 1.0 / self.fps;
 
         let size = BufferSize::from_get_size(self.window.get_size());
 
@@ -40,6 +39,9 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
 
         self.app.lock().unwrap()
             .event(Event::RedrawReqiest { buffer: &mut front.0 } );
+
+        let tick = Duration::from_secs_f64(1.0 / self.fps);
+        let mut last_draw = Instant::now();
 
         while self.window.is_open() {
             let keys = self.window.get_keys();
@@ -90,8 +92,11 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
                 } else {
                     self.window.update();
                 }
-
-                wait(tick);
+                let dur = last_draw.elapsed();
+                if tick > dur {
+                    thread::sleep(tick - dur);
+                }
+                last_draw = Instant::now();
             });
 
             std::mem::swap(&mut front, &mut back);
