@@ -84,6 +84,10 @@ pub trait SinCos {
     fn cos(self) -> Self;
 
     fn sin_cos(self) -> (Self, Self) where Self: Sized;
+
+    fn asin(self) -> Self;
+
+    fn acos(self) -> Self;
 }
 
 impl SinCos for f32 {
@@ -98,6 +102,14 @@ impl SinCos for f32 {
     fn sin_cos(self) -> (Self, Self) {
         self.sin_cos()
     }
+
+    fn asin(self) -> Self {
+        self.asin()
+    }
+
+    fn acos(self) -> Self {
+        self.acos()
+    }
 }
 
 impl SinCos for f64 {
@@ -111,5 +123,13 @@ impl SinCos for f64 {
 
     fn sin_cos(self) -> (Self, Self) {
         self.sin_cos()
+    }
+
+    fn asin(self) -> Self {
+        self.asin()
+    }
+
+    fn acos(self) -> Self {
+        self.acos()
     }
 }

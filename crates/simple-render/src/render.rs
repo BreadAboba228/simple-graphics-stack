@@ -1,6 +1,6 @@
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 
-use minifb::{MouseButton, Window};
+use minifb::Window;
 
 use crate::{color::Color, render::{app_handler::{AppHandler, Event}, buffer::{Buffer, BufferSize}}};
 
@@ -10,6 +10,13 @@ pub mod image;
 
 pub fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
+}
+
+pub struct Mouse {
+    pub pos: Option<(f32, f32)>,
+    pub left: bool,
+    pub middle: bool,
+    pub right: bool,
 }
 
 pub struct Render<T> {
@@ -28,7 +35,6 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
 
         let size = BufferSize::from_get_size(self.window.get_size());
 
-
         let mut front = (Buffer::init(size), true);
         let mut back = (Buffer::init(size), true);
 
@@ -38,8 +44,13 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
         while self.window.is_open() {
             let keys = self.window.get_keys();
             let curr_size = BufferSize::from_get_size(self.window.get_size());
-            let mouse_pos = self.window.get_mouse_pos(minifb::MouseMode::Discard);
-            let mouse_button = self.window.get_mouse_down(minifb::MouseButton::Left);
+
+            let mouse = Mouse {
+                pos: self.window.get_mouse_pos(minifb::MouseMode::Discard),
+                left: self.window.get_mouse_down(minifb::MouseButton::Left),
+                middle: self.window.get_mouse_down(minifb::MouseButton::Middle),
+                right: self.window.get_mouse_down(minifb::MouseButton::Right),
+            };
 
             thread::scope(|s| {
                 s.spawn(|| {
@@ -55,22 +66,18 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
                         back.0.size = curr_size;
                     }
                     self.app.lock().unwrap()
-                        .event(Event::MousePressed { button: MouseButton::Left, pressed: mouse_button });
+                        .event(Event::MouseRequest { mouse });
 
                     self.app.lock().unwrap()
                         .event(Event::KeyPressed { keys });
 
+                    let need_to_redraw = self.app.lock().unwrap().need_to_redraw();
 
-                    if let Some(pos) = mouse_pos {
-                        self.app.lock().unwrap().event(Event::MousePos { pos });
+                    if need_to_redraw {
+                        self.app.lock().unwrap().event(Event::Redrawed);
                     }
 
-                    back.1 = if self.app.lock().unwrap().need_to_redraw() {
-                        self.app.lock().unwrap().event(Event::Redrawed);
-                        true
-                    } else {
-                        is_resized
-                    };
+                    back.1 = is_resized || need_to_redraw;
 
                     if back.1 {
                         self.app.lock().unwrap()

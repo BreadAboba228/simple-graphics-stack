@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::{matrix::Unit, num_traits::{One, SinCos, Sqrt, Two, Zero}, vector::{AxisUnits, Vector, vec2::*, vec3::*, vec4::*}};
+use crate::{matrix::{Unit, matrix3::Matrix3, matrix4::Matrix4}, num_traits::{One, SinCos, Sqrt, Two, Zero}, vector::{AxisUnits, Vector, vec2::*, vec3::*, vec4::*}};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub struct Quaternion<T> {
@@ -145,6 +145,47 @@ impl<T: Copy + Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Neg<Output 
     }
 }
 
+impl<T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + One> Quaternion<T> {
+    pub fn lerp(&mut self, rhs: Quaternion<T>, t: T) {
+        *self = self.to_lerped(rhs, t);
+    }
+
+    pub fn to_lerped(&self, rhs: Quaternion<T>, t: T) -> Quaternion<T> {
+        *self * (T::ONE - t) + rhs * t
+    }
+}
+
+impl<T: Copy + Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Div<Output = T> + One + SinCos> Quaternion<T> {
+    /// quaternions need to be normalized
+    pub fn slerp(&mut self, rhs: Quaternion<T>, t: T) {
+        *self = self.to_slerped(rhs, t);
+    }
+
+    /// quaternions need to be normalized
+    pub fn to_slerped(&self, rhs: Quaternion<T>, t: T) -> Quaternion<T> {
+        let angle = self.dot_mul(rhs).acos();
+
+        let angle_sin = angle.sin();
+
+        let q_1 = *self * ((angle * (T::ONE - t)).sin() / angle_sin);
+
+        let q_2 =  *self * ((angle * t).sin() / angle_sin);
+
+        q_1 + q_2
+    }
+}
+
+impl<T: Copy + Add<Output = T> + Mul<Output = T>> Quaternion<T> {
+    pub fn dot_mul(&self, rhs: Quaternion<T>) -> T {
+        let x = self.x * rhs.x;
+        let y = self.y * rhs.y;
+        let z = self.z * rhs.z;
+        let w = self.w * rhs.w;
+
+        x + y + z + w
+    }
+}
+
 impl<T: Copy + One + Zero> Unit for Quaternion<T> {
     const UNIT: Self = Vec3::ZERO.extend_to_quater(T::ONE);
 }
@@ -192,6 +233,19 @@ impl<T: Copy + Sub<Output = T>> Sub for Quaternion<T> {
         let y = self.y - rhs.y;
         let z = self.z - rhs.z;
         let w = self.w - rhs.w;
+
+        Self::new(x, y, z, w)
+    }
+}
+
+impl<T: Copy + Mul<Output = T>> Mul<T> for Quaternion<T> {
+    type Output = Quaternion<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let x = self.x * rhs;
+        let y = self.y * rhs;
+        let z = self.z * rhs;
+        let w = self.w * rhs;
 
         Self::new(x, y, z, w)
     }
@@ -254,5 +308,29 @@ impl<T: Copy> Quaternion<T> {
 
     pub fn into_vec3(&self) -> Vec3<T> {
         (*self).into()
+    }
+}
+
+impl<T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Zero + One + Two> Quaternion<T> {
+    pub fn into_matrix3(&self) -> Matrix3<T> {
+        let xx = self.x * self.x;
+        let xy = self.x * self.y;
+        let xz = self.x * self.z;
+        let xw = self.x * self.w;
+        let yy = self.y * self.y;
+        let yz = self.y * self.z;
+        let yw = self.y * self.w;
+        let zz = self.z * self.z;
+        let zw = self.z * self.w;
+
+        let x = Vec3::new(T::ONE - T::TWO * (yy + zz), T::TWO * (xy - zw), T::TWO * (xz + yw));
+        let y = Vec3::new(T::TWO * (xy + zw), T::ONE - T::TWO * (xx + zz), T::ONE * (yz - xw));
+        let z = Vec3::new(T::TWO * (xz - yw), T::TWO * (yz + xw), T::ONE - T::TWO * (xx - yy));
+
+        Matrix3::row_major_new(x, y, z)
+    }
+
+    pub fn into_matrix4(&self) -> Matrix4<T> {
+        self.into_matrix3().into()
     }
 }

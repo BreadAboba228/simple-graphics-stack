@@ -2,7 +2,7 @@ use std::{ops::Mul, sync::{Arc, Mutex}, thread};
 
 use minifb::{Key, Window};
 use simple_linear_algebra::{num_traits::Zero, vector::{Axis, Vector, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
-use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
+use simple_render::{color::Color, render::{Mouse, Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
 
 use crate::{engine::render_cache::RenderCache, scene::Scene, shape::AngleUnit};
 
@@ -14,8 +14,7 @@ pub struct Engine {
     quater: Quaternion<f64>,
     render_cache: RenderCache,
     need_to_redraw: bool,
-    mouse_pos: Option<(f32, f32)>,
-    is_mouse_pressed: bool
+    mouse_pos: Option<(f32, f32)>
 }
 
 impl Engine {
@@ -33,9 +32,7 @@ impl Engine {
 
         let mouse_pos = None;
 
-        let is_mouse_pressed = false;
-
-        Self { scene, color, quater, render_cache, need_to_redraw, mouse_pos, is_mouse_pressed }
+        Self { scene, color, quater, render_cache, need_to_redraw, mouse_pos }
     }
 
     pub fn event_loop(&mut self) {
@@ -195,31 +192,24 @@ impl AppHandler for Engine {
                 self.need_to_redraw = false
             },
 
-            Event::MousePos { pos } => {
+            Event::MouseRequest { mouse } => {
+                let Mouse { pos, left: mouse_pressed, middle: _, right: _ } = mouse;
 
-                if self.is_mouse_pressed {
+                if mouse_pressed && let Some(pos) = pos {
+                    if let Some(curr_pos) = self.mouse_pos {
+                        let pos_diff = ((pos.0 - curr_pos.0) as f64 * 0.1, (pos.1 - curr_pos.1) as f64 * 0.1);
 
-                    let pos_diff = if let Some(curr_pos) = self.mouse_pos {
-                        ((pos.0 - curr_pos.0) as f64 * 0.1, (pos.1 - curr_pos.1) as f64 * 0.1)
-                    } else {
-                    (0.0, 0.0)
-                    };
+                        let quater_x = Quaternion::from_angle(pos_diff.0.to_radians(), Axis::Y.to_vec());
+
+                        let quater_y = Quaternion::from_angle(-pos_diff.1.to_radians(), Axis::X.to_vec());
+
+                        let quater = quater_x * quater_y;
+
+                        self.scene.camera.raw_rotate(quater);
+                    }
 
                     self.mouse_pos = Some(pos);
-
-                    let quater_x = Quaternion::from_angle(pos_diff.0.to_radians(), Axis::Y.to_vec());
-
-                    let quater_y = Quaternion::from_angle(-pos_diff.1.to_radians(), Axis::X.to_vec());
-
-                    let quater = quater_x * quater_y;
-
-                    self.scene.camera.raw_rotate(quater);
-                }
-            },
-
-            Event::MousePressed { button: _, pressed } => {
-                self.is_mouse_pressed = pressed;
-                if !pressed {
+                } else {
                     self.mouse_pos = None;
                 }
             }

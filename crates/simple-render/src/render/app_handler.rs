@@ -1,6 +1,6 @@
-use minifb::{Key, MouseButton};
+use minifb::Key;
 
-use crate::render::buffer::Buffer;
+use crate::render::{Mouse, buffer::Buffer};
 
 pub trait AppHandler {
     fn event(&mut self, event: Event);
@@ -10,8 +10,7 @@ pub trait AppHandler {
 
 pub enum Event<'a> {
     KeyPressed { keys: Vec<Key> },
-    MousePressed { button: MouseButton, pressed: bool },
+    MouseRequest { mouse: Mouse },
     RedrawReqiest { buffer: &'a mut Buffer },
-    MousePos { pos: (f32, f32) },
     Redrawed,
 }
