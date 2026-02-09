@@ -9,7 +9,7 @@ struct App(Color, bool, Image);
 impl AppHandler for App {
     fn event(&mut self, event: Event) {
         match event {
-            Event::KeyPressed { keys } => {
+            Event::KeyPressed { keys, mouse: _ } => {
                 self.1 = true;
                 for key in keys {
                     match key {
@@ -52,8 +52,6 @@ impl AppHandler for App {
             Event::Redrawed => {
                 self.1 = false
             }
-
-            _ => (),
         }
     }
 

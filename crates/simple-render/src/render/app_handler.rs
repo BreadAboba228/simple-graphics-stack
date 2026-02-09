@@ -9,8 +9,7 @@ pub trait AppHandler {
 }
 
 pub enum Event<'a> {
-    KeyPressed { keys: Vec<Key> },
-    MouseRequest { mouse: Mouse },
+    KeyPressed { keys: Vec<Key>, mouse: Mouse },
     RedrawReqiest { buffer: &'a mut Buffer },
     Redrawed,
 }

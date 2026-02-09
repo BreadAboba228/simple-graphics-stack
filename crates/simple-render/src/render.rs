@@ -67,11 +67,9 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
 
                         back.0.size = curr_size;
                     }
-                    self.app.lock().unwrap()
-                        .event(Event::MouseRequest { mouse });
 
                     self.app.lock().unwrap()
-                        .event(Event::KeyPressed { keys });
+                        .event(Event::KeyPressed { keys, mouse });
 
                     let need_to_redraw = self.app.lock().unwrap().need_to_redraw();
 

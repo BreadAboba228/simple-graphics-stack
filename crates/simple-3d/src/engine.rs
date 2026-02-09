@@ -130,7 +130,7 @@ impl AppHandler for Engine {
                 self.render_cache.clear();
             },
 
-            Event::KeyPressed { keys } => {
+            Event::KeyPressed { keys, mouse } => {
                 self.need_to_redraw = true;
 
                 let quater = self.scene.camera.quater();
@@ -142,6 +142,26 @@ impl AppHandler for Engine {
                 //let up = Vec3::new(0.0, 1.0, 0.0).to_raw_rotated(quater);
 
                 let mut move_direction = Vec3::ZERO;
+
+                let Mouse { pos, left: mouse_pressed, middle: _, right: _ } = mouse;
+
+                if mouse_pressed && let Some(pos) = pos {
+                    if let Some(curr_pos) = self.mouse_pos {
+                        let pos_diff = ((pos.0 - curr_pos.0) as f64 * 0.1, (pos.1 - curr_pos.1) as f64 * 0.1);
+
+                        let quater_x = Quaternion::from_angle(pos_diff.0.to_radians(), Axis::Y.to_vec());
+
+                        let quater_y = Quaternion::from_angle(-pos_diff.1.to_radians(), Axis::X.to_vec());
+
+                        let quater = quater_x * quater_y;
+
+                        self.scene.camera.raw_rotate(quater);
+                    }
+
+                    self.mouse_pos = Some(pos);
+                } else {
+                    self.mouse_pos = None;
+                }
 
                 for key in keys {
 
@@ -191,28 +211,6 @@ impl AppHandler for Engine {
             Event::Redrawed => {
                 self.need_to_redraw = false
             },
-
-            Event::MouseRequest { mouse } => {
-                let Mouse { pos, left: mouse_pressed, middle: _, right: _ } = mouse;
-
-                if mouse_pressed && let Some(pos) = pos {
-                    if let Some(curr_pos) = self.mouse_pos {
-                        let pos_diff = ((pos.0 - curr_pos.0) as f64 * 0.1, (pos.1 - curr_pos.1) as f64 * 0.1);
-
-                        let quater_x = Quaternion::from_angle(pos_diff.0.to_radians(), Axis::Y.to_vec());
-
-                        let quater_y = Quaternion::from_angle(-pos_diff.1.to_radians(), Axis::X.to_vec());
-
-                        let quater = quater_x * quater_y;
-
-                        self.scene.camera.raw_rotate(quater);
-                    }
-
-                    self.mouse_pos = Some(pos);
-                } else {
-                    self.mouse_pos = None;
-                }
-            }
         }
     }
 
