@@ -19,8 +19,8 @@ impl Camera {
         Self::new(pos, quaternion)
     }
 
-    pub fn quater(&self) -> &Quaternion<f64> {
-        &self.quater
+    pub fn quater(&self) -> Quaternion<f64> {
+        self.quater
     }
 
     pub fn raw_rotate(&mut self, quater: Quaternion<f64>) {

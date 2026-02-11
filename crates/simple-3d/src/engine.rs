@@ -2,7 +2,7 @@ use std::{ops::Mul, sync::{Arc, Mutex}, thread};
 
 use minifb::{Key, Window};
 use simple_linear_algebra::{num_traits::Zero, vector::{Axis, Vector, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
-use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
+use simple_render::{color::Color, render::{Mouse, Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
 
 use crate::{engine::render_cache::RenderCache, scene::Scene, shape::AngleUnit};
 
@@ -13,7 +13,8 @@ pub struct Engine {
     color: Color,
     quater: Quaternion<f64>,
     render_cache: RenderCache,
-    need_to_redraw: bool
+    need_to_redraw: bool,
+    mouse_pos: Option<(f32, f32)>
 }
 
 impl Engine {
@@ -29,7 +30,9 @@ impl Engine {
 
         let need_to_redraw = true;
 
-        Self { scene, color, quater, render_cache, need_to_redraw }
+        let mouse_pos = None;
+
+        Self { scene, color, quater, render_cache, need_to_redraw, mouse_pos }
     }
 
     pub fn event_loop(&mut self) {
@@ -120,67 +123,98 @@ impl AppHandler for Engine {
                         let end = self.render_cache.get(index, edge.1);
 
                         //TODO: replace isize with usize in draw_line
-                        buffer.draw_line(start, end, self.color);
+                        buffer.accuracy_draw_line(start, end, self.color);
                     }
                 }
 
                 self.render_cache.clear();
             },
 
-            Event::KeyPressed { key } => {
+            Event::KeyPressed { keys, mouse } => {
                 self.need_to_redraw = true;
-                match key {
-                    Key::W => {
-                        self.scene.camera.pos += Vec3::ZERO.set_z(0.1).to_raw_rotated(self.render_cache.camera_quater());
+
+                let quater = self.scene.camera.quater();
+
+                let forward = Vec3::new(0.0, 0.0, 1.0).to_raw_rotated(quater);
+
+                let right = Vec3::new(1.0, 0.0, 0.0).to_raw_rotated(quater);
+
+                //let up = Vec3::new(0.0, 1.0, 0.0).to_raw_rotated(quater);
+
+                let mut move_direction = Vec3::ZERO;
+
+                let Mouse { pos, left: mouse_pressed, middle: _, right: _ } = mouse;
+
+                if mouse_pressed && let Some(pos) = pos {
+                    if let Some(curr_pos) = self.mouse_pos {
+                        let pos_diff = ((pos.0 - curr_pos.0) as f64 * 0.1, (pos.1 - curr_pos.1) as f64 * 0.1);
+
+                        let quater_x = Quaternion::from_angle(pos_diff.0.to_radians(), Axis::Y.to_vec());
+
+                        let quater_y = Quaternion::from_angle(-pos_diff.1.to_radians(), Axis::X.to_vec());
+
+                        let quater = quater_x * quater_y;
+
+                        self.scene.camera.raw_rotate(quater);
                     }
 
-                    Key::S => {
-                        self.scene.camera.pos -= Vec3::ZERO.set_z(0.1).to_raw_rotated(self.render_cache.camera_quater());
-                    }
-
-                    Key::A => {
-                        self.scene.camera.pos += Vec3::ZERO.set_x(0.1).to_raw_rotated(self.render_cache.camera_quater())
-                    }
-
-                    Key::D => {
-                        self.scene.camera.pos -= Vec3::ZERO.set_x(0.1).to_raw_rotated(self.render_cache.camera_quater());
-                    }
-
-                    Key::Space => {
-                        self.scene.camera.pos += Vec3::ZERO.set_y(0.1).to_raw_rotated(self.render_cache.camera_quater());
-                    }
-
-                    Key::LeftShift => {
-                        self.scene.camera.pos -= Vec3::ZERO.set_y(0.1).to_raw_rotated(self.render_cache.camera_quater());
-                    }
-
-                    Key::Up => {
-                        self.scene.camera.rotate(&[AngleUnit(Axis::X, -0.5)]);
-                    }
-
-                    Key::Down => {
-                        self.scene.camera.rotate(&[AngleUnit(Axis::X, 0.5)]);
-                    }
-
-                    Key::Left => {
-                        self.scene.camera.rotate(&[AngleUnit(Axis::Y, 0.5)]);
-                    }
-
-                    Key::Right => {
-                        self.scene.camera.rotate(&[AngleUnit(Axis::Y, -0.5)]);
-                    }
-
-                    _ => (),
+                    self.mouse_pos = Some(pos);
+                } else {
+                    self.mouse_pos = None;
                 }
-            }
+
+                for key in keys {
+
+                    match key {
+                        Key::W => move_direction += forward,
+
+                        Key::S => move_direction -= forward,
+
+                        Key::A => move_direction += right,
+
+                        Key::D => move_direction -= right,
+
+                        Key::Space => {
+                            self.scene.camera.pos += Vec3::ZERO.set_y(0.1).to_raw_rotated(self.render_cache.camera_quater());
+                        },
+
+                        Key::LeftShift => {
+                            self.scene.camera.pos -= Vec3::ZERO.set_y(0.1).to_raw_rotated(self.render_cache.camera_quater());
+                        },
+
+                        Key::Up => {
+                            self.scene.camera.rotate(&[AngleUnit(Axis::X, -0.5)]);
+                        },
+
+                        Key::Down => {
+                            self.scene.camera.rotate(&[AngleUnit(Axis::X, 0.5)]);
+                        },
+
+                        Key::Left => {
+                            self.scene.camera.rotate(&[AngleUnit(Axis::Y, 0.5)]);
+                        },
+
+                        Key::Right => {
+                            self.scene.camera.rotate(&[AngleUnit(Axis::Y, -0.5)]);
+                        },
+
+                        _ => (),
+                    }
+                }
+
+                move_direction.normalize();
+
+                // 0.1 is move speed
+                self.scene.camera.pos += move_direction * 0.1;
+            },
+
+            Event::Redrawed => {
+                self.need_to_redraw = false
+            },
         }
     }
 
     fn need_to_redraw(&self) -> bool {
         self.need_to_redraw
-    }
-
-    fn redrawed(&mut self) {
-        self.need_to_redraw = false;
     }
 }

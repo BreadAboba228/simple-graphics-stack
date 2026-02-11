@@ -1,6 +1,6 @@
-use std::{fs::File, io::BufReader};
+use std::{fs::File, io::{BufReader, BufWriter}, path::PathBuf};
 
-use png::{Decoder, DecodingError};
+use png::{Decoder, DecodingError, Encoder, EncodingError};
 
 use crate::render::buffer::{Buffer, BufferSize, RawBuffer};
 
@@ -35,5 +35,36 @@ impl Image {
         );
 
         Ok(Image::new(Buffer::new(raw_buffer, size)))
+    }
+
+    pub fn to_png(&self, path: PathBuf) -> Result<(), EncodingError> {
+
+        let file = File::create(path)?;
+
+        let ref mut w = BufWriter::new(file);
+
+        let mut encoder = Encoder::new(
+            w,
+            self.0.size.width as u32,
+            self.0.size.height as u32
+        );
+
+        encoder.set_color(png::ColorType::Rgb);
+        encoder.set_depth(png::BitDepth::Eight);
+
+        let mut writer = encoder.write_header()?;
+
+        let data: Vec<u8> = self.0.raw_buffer.0
+        .iter().flat_map(|value| {
+            [
+                (*value >> 16) as u8,
+                (*value >> 8) as u8,
+                (*value) as u8
+            ]
+        }).collect();
+
+        writer.write_image_data(&data)?;
+
+        Ok(())
     }
 }

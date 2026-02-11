@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Mutex}, thread, time::Duration};
+use std::{sync::{Arc, Mutex}, thread, time::{Duration, Instant}};
 
 use minifb::Window;
 
@@ -10,6 +10,13 @@ pub mod image;
 
 pub fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
+}
+
+pub struct Mouse {
+    pub pos: Option<(f32, f32)>,
+    pub left: bool,
+    pub middle: bool,
+    pub right: bool,
 }
 
 pub struct Render<T> {
@@ -24,10 +31,8 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
     }
 
     pub fn run(&mut self) {
-        let tick = 1.0 / self.fps;
 
         let size = BufferSize::from_get_size(self.window.get_size());
-
 
         let mut front = (Buffer::init(size), true);
         let mut back = (Buffer::init(size), true);
@@ -35,35 +40,44 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
         self.app.lock().unwrap()
             .event(Event::RedrawReqiest { buffer: &mut front.0 } );
 
+        let tick = Duration::from_secs_f64(1.0 / self.fps);
+        let mut last_draw = Instant::now();
+
         while self.window.is_open() {
             let keys = self.window.get_keys();
-            let r_size = BufferSize::from_get_size(self.window.get_size());
+            let curr_size = BufferSize::from_get_size(self.window.get_size());
+
+            let mouse = Mouse {
+                pos: self.window.get_mouse_pos(minifb::MouseMode::Discard),
+                left: self.window.get_mouse_down(minifb::MouseButton::Left),
+                middle: self.window.get_mouse_down(minifb::MouseButton::Middle),
+                right: self.window.get_mouse_down(minifb::MouseButton::Right),
+            };
 
             thread::scope(|s| {
                 s.spawn(|| {
-                    let is_resized = back.0.size != r_size;
+                    let is_resized = back.0.size != curr_size;
 
                     if is_resized {
-                        let target_len = r_size.width * r_size.height;
+                        let target_len = curr_size.width * curr_size.height;
 
                         if target_len > back.0.raw_buffer.0.len() {
                             back.0.raw_buffer.0.resize(target_len, Color::BLACK.0);
                         }
 
-                        back.0.size = r_size;
+                        back.0.size = curr_size;
                     }
 
-                    for key in keys {
-                        self.app.lock().unwrap()
-                            .event(Event::KeyPressed { key });
+                    self.app.lock().unwrap()
+                        .event(Event::KeyPressed { keys, mouse });
+
+                    let need_to_redraw = self.app.lock().unwrap().need_to_redraw();
+
+                    if need_to_redraw {
+                        self.app.lock().unwrap().event(Event::Redrawed);
                     }
 
-                    back.1 = if self.app.lock().unwrap().need_to_redraw() {
-                        self.app.lock().unwrap().redrawed();
-                        true
-                    } else {
-                        is_resized
-                    };
+                    back.1 = is_resized || need_to_redraw;
 
                     if back.1 {
                         self.app.lock().unwrap()
@@ -76,8 +90,11 @@ impl<'a, T: AppHandler + Send + Sync> Render<T> {
                 } else {
                     self.window.update();
                 }
-
-                wait(tick);
+                let dur = last_draw.elapsed();
+                if tick > dur {
+                    thread::sleep(tick - dur);
+                }
+                last_draw = Instant::now();
             });
 
             std::mem::swap(&mut front, &mut back);

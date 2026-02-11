@@ -53,7 +53,7 @@ impl RenderCache {
             self.reload_camera_disp_matrix(camera);
         }
 
-        if self.camera.1 != *camera.quater() {
+        if self.camera.1 != camera.quater() {
             self.reload_camera_quater(camera);
         }
     }

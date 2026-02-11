@@ -1,5 +1,3 @@
-//!failed
-
 use simple_graph_builder::Builder;
 use minifb::{Window, WindowOptions};
 use simple_render::{color::Color, render::buffer::BufferSize};
@@ -11,6 +9,6 @@ fn main() {
 
     let mut options = WindowOptions::default();
     options.resize = true;
-    let window = Window::new("sin test", size.width, size.height, options).unwrap();
-    app.run(0.01, window);
+    let window = Window::new("tan test", size.width, size.height, options).unwrap();
+    app.run(120.0, window);
 }

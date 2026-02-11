@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul};
 
-use crate::{matrix::Unit, num_traits::{One, Zero}, vector::{AxisUnits, vec4::Vec4}};
+use crate::{matrix::{Unit, matrix3::Matrix3}, num_traits::{One, Zero}, vector::{AxisUnits, vec4::Vec4}};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Matrix4<T> {
@@ -85,5 +85,16 @@ impl Matrix4<f64> {
             Vec4::new(0.0, 0.0, far / f_n, 1.0),
             Vec4::new(0.0, 0.0, -(near * far) / f_n, 0.0)
         )
+    }
+}
+
+impl<T: Copy + Zero + One> From<Matrix3<T>> for Matrix4<T> {
+    fn from(value: Matrix3<T>) -> Self {
+        let i = value.i.extend_to_vec4(T::ZERO);
+        let j = value.j.extend_to_vec4(T::ZERO);
+        let k = value.k.extend_to_vec4(T::ZERO);
+        let w = Vec4::W;
+
+        Self::new(i, j, k, w)
     }
 }

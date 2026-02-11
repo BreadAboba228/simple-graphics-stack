@@ -21,8 +21,8 @@ impl BufferSize {
 impl From<BufferSize> for Vec2<Vec2<isize>> {
     fn from(value: BufferSize) -> Self {
         Vec2 {
-            x: Vec2::new(0, 0),
-            y: Vec2::new(value.width as isize, value.height as isize)
+            x: Vec2 { x: 0, y: 0 },
+            y: Vec2 { x: value.width as isize - 1, y: value.height as isize - 1 }
         }
     }
 }
@@ -154,7 +154,7 @@ impl Buffer {
         let mut err = delta_x - delta_y;
 
         loop {
-            self.draw_point(Vec2::new(x1, y1), color);
+            self.draw_point(Vec2 { x: x1, y: y1 }, color);
 
             if x1 == x2 && y1 == y2 {
                 break;
@@ -226,8 +226,8 @@ impl Buffer {
         let Vec2 { x: min_x, y: min_y } = rect.x;
         let Vec2 { x: max_x, y: max_y } = rect.y;
 
-        for y in min_y..=max_y {
-            for x in min_x..=max_x {
+        for x in min_x..=max_x {
+            for y in min_y..=max_y {
                 self.draw_point(Vec2::new(x, y), color);
             }
         }
@@ -243,7 +243,7 @@ impl Buffer {
 
                 let img_point = Vec2::new(x, y);
 
-                self.draw_point(buf_point, Color::new(image.0.get_point(img_point)));
+                self.draw_point(buf_point, Color(image.0.get_point(img_point)));
             }
         }
     }
@@ -286,9 +286,9 @@ pub fn rectangles_intersection(rect_1: Vec2<Vec2<isize>>, rect_2: Vec2<Vec2<isiz
 
     let &y1 = [rect_1.x.y, rect_2.x.y].iter().max().unwrap();
 
-    let &x2 = [rect_1.y.x, rect_2.y.x].iter().max().unwrap();
+    let &x2 = [rect_1.y.x, rect_2.y.x].iter().min().unwrap();
 
-    let &y2 = [rect_1.y.y, rect_2.y.y].iter().max().unwrap();
+    let &y2 = [rect_1.y.y, rect_2.y.y].iter().min().unwrap();
 
     Vec2::new(
         Vec2::new(x1, y1),

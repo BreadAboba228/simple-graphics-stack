@@ -9,18 +9,20 @@ struct App(Color, bool, Image);
 impl AppHandler for App {
     fn event(&mut self, event: Event) {
         match event {
-            Event::KeyPressed { key } => {
+            Event::KeyPressed { keys, mouse: _ } => {
                 self.1 = true;
-                match key {
-                    Key::W => {
-                        self.0.0 += 1;
-                    },
+                for key in keys {
+                    match key {
+                        Key::W => {
+                            self.0.0 += 1;
+                        },
 
-                    Key::S => {
-                        self.0.0 -= 1;
-                    },
+                        Key::S => {
+                            self.0.0 -= 1;
+                        },
 
-                    _ => (),
+                        _ => (),
+                    }
                 }
             },
 
@@ -29,21 +31,32 @@ impl AppHandler for App {
 
                 buffer.draw_image(&self.2, Vec2::new(0, 0));
 
+                buffer.raw_draw_point(Vec2 { x: (buffer.size.width / 2) as isize, y: (buffer.size.height / 2) as isize }, Color::BLUE);
+
+                buffer.draw_point(Vec2 { x: (buffer.size.width / 2 + 1) as isize, y: (buffer.size.height / 2 + 1) as isize }, Color::WHITE);
+
                 buffer.draw_line(Vec2::new(800, 800), Vec2::new(1, 1), self.0);
 
                 let triangle = Vec3::new(Vec2::new(0, 0), Vec2::new(100, 400), Vec2::new(700, 200));
 
                 buffer.fill_triangle(triangle, Color::GREEN);
+
+                let rectangle = Vec2 {
+                    y: Vec2::new((buffer.size.width / 2) as isize, (buffer.size.height / 2) as isize),
+                    x: Vec2::new(0, 0)
+                };
+
+                buffer.fill_rectangle(rectangle, Color::RED);
+            },
+
+            Event::Redrawed => {
+                self.1 = false
             }
         }
     }
 
     fn need_to_redraw(&self) -> bool {
         self.1
-    }
-
-    fn redrawed(&mut self) {
-        self.1 = false;
     }
 }
 
