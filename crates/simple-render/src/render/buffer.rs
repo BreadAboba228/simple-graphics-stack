@@ -1,6 +1,6 @@
 use simple_linear_algebra::vector::{vec2::Vec2, vec3::Vec3};
 
-use crate::{color::Color, render::image::Image};
+use crate::{color::Color, render::{image::Image, shader::{ColorFragmentShader, DefaultVertexShader, FragmentShader, ImageFragmentShader, ShaderPipeline, TriangleVertexShader, VertexShader}}};
 
 #[derive(Clone, Copy, PartialEq, PartialOrd)]
 pub struct BufferSize {
@@ -66,10 +66,16 @@ impl Buffer {
         self.raw_buffer.fill(color);
     }
 
-    pub fn get_point(&self, point: Vec2<isize>) -> u32 {
+    pub fn raw_get_point(&self, point: Vec2<isize>) -> u32 {
         let Vec2 { x, y } = point;
 
         self.raw_buffer.0[(y as usize) * self.size.width + x as usize]
+    }
+
+    pub fn get_point(&self, point: Vec2<isize>) -> Option<&u32> {
+        let Vec2 { x, y } = point;
+
+        self.raw_buffer.0.get((y as usize) * self.size.width + x as usize)
     }
 
     pub fn raw_draw_point(&mut self, point: Vec2<isize>, color: Color) {
@@ -81,6 +87,38 @@ impl Buffer {
     pub fn draw_point(&mut self, point: Vec2<isize>, color: Color) {
         if point.is_inside_buffer(self.size) {
             self.raw_draw_point(point, color);
+        }
+    }
+
+    pub fn raw_shade_buffer<V: VertexShader, F: FragmentShader>(&mut self, shader: ShaderPipeline<V, F>) {
+        self.raw_shade_rect(shader, self.size.into());
+    }
+
+    pub fn raw_shade_rect<V: VertexShader, F: FragmentShader>(&mut self, shader: ShaderPipeline<V, F>, rect: Vec2<Vec2<isize>>) {
+        for x in rect.x.x..=rect.y.x {
+            for y in rect.x.y..=rect.y.y {
+                let point = Vec2 { x, y };
+
+                if let Some((point, color)) = shader.shade(point) {
+                    if let Some(color) = color {
+                        self.raw_draw_point(point, color);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn shade_rect<V: VertexShader, F: FragmentShader>(&mut self, shader: ShaderPipeline<V, F>, rect: Vec2<Vec2<isize>>) {
+        for x in rect.x.x..=rect.y.x {
+            for y in rect.x.y..=rect.y.y {
+                let point = Vec2 { x, y };
+
+                if let Some((point, color)) = shader.shade(point) {
+                    if let Some(color) = color {
+                        self.draw_point(point, color);
+                    }
+                }
+            }
         }
     }
 
@@ -194,15 +232,12 @@ impl Buffer {
 
         let rect = rectangles_intersection(self.size.into(), rect);
 
-        for x in rect.x.x..=rect.y.x {
-            for y in rect.x.y..=rect.y.y {
-                let point = Vec2::new(x, y);
+        let pipeline = ShaderPipeline {
+            vertex: TriangleVertexShader(triangle),
+            fragment: ColorFragmentShader(color)
+        };
 
-                if point.is_inside_triangle(triangle) {
-                    self.raw_draw_point(point, color);
-                }
-            }
-        }
+        self.raw_shade_rect(pipeline, rect);
     }
 
     pub fn draw_rectangle(&mut self, rectangle: Vec2<Vec2<isize>>, color: Color) {
@@ -234,22 +269,18 @@ impl Buffer {
     }
 
     pub fn draw_image(&mut self, image: &Image, point: Vec2<isize>) {
-        let Vec2 { x: offset_x, y: offset_y } = point;
-        let (img_x, img_y) = (image.0.size.width as isize, image.0.size.height as isize);
+        let pipeline = ShaderPipeline {
+            vertex: DefaultVertexShader,
+            fragment: ImageFragmentShader(image, point),
+        };
 
-        for x in 0..img_x {
-            for y in 0..img_y {
-                let buf_point = Vec2::new(x + offset_x, y + offset_y);
+        let img_point = Vec2 { x: image.0.size.width as isize - 1, y: image.0.size.height as isize - 1 };
 
-                let img_point = Vec2::new(x, y);
-
-                self.draw_point(buf_point, Color(image.0.get_point(img_point)));
-            }
-        }
+        self.shade_rect(pipeline, Vec2 { x: point, y: point + img_point });
     }
 }
 
-trait Point {
+pub trait Point {
     fn is_inside_rectangle(&self, rectangle: Vec2<Vec2<isize>>) -> bool;
 
     fn is_inside_triangle(&self, triangle: Vec3<Vec2<isize>>) -> bool;

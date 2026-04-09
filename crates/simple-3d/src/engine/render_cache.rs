@@ -1,33 +1,45 @@
 use simple_linear_algebra::{matrix::matrix4::Matrix4, vector::{quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
-use simple_render::render::buffer::BufferSize;
+use simple_render::{color::Color, render::buffer::BufferSize};
 
 use crate::{camera::Camera, shape::Shape};
 
+pub struct TriangleCache {
+    pub shape_index: usize,
+    pub triangle: (Vec3<usize>, Color),
+}
+
 pub struct RenderCache {
     pool: Vec<Vec<Vec2<isize>>>,
+    pub triangles_cache: Vec<(TriangleCache, f64)>,
     persp_matrix: (Matrix4<f64>, BufferSize),
     camera: (Matrix4<f64>, Quaternion<f64>, Vec3<f64>),
 }
 
 impl RenderCache {
-    fn new(pool: Vec<Vec<Vec2<isize>>>, persp_matrix: (Matrix4<f64>, BufferSize), camera: (Matrix4<f64>, Quaternion<f64>, Vec3<f64>)) -> Self {
-        RenderCache { pool, persp_matrix, camera }
+    fn new(pool: Vec<Vec<Vec2<isize>>>, triangles_cache: Vec<(TriangleCache, f64)>, persp_matrix: (Matrix4<f64>, BufferSize), camera: (Matrix4<f64>, Quaternion<f64>, Vec3<f64>)) -> Self {
+        RenderCache { pool, triangles_cache, persp_matrix, camera }
     }
 
     pub fn init(shapes: &[Shape], size: BufferSize, camera: &Camera) -> Self {
         let mut pool = Vec::with_capacity(shapes.len());
 
+        let mut triangle_capacity = 0;
+
         for shape in shapes {
             let vec = Vec::with_capacity(shape.vertexes().len());
 
             pool.push(vec);
+
+            triangle_capacity += shape.triangles().len();
         }
+
+        let triangle_cache = Vec::with_capacity(triangle_capacity);
 
         let persp_matrix = (Matrix4::persp_rh_matrix(90.0, size.width as f64 / size.height as f64, 0.1, 100.0), size);
 
         let camera = (camera.to_displacement_matrix(), camera.to_rotation_quaternion(), camera.pos);
 
-        Self::new(pool, persp_matrix, camera)
+        Self::new(pool, triangle_cache, persp_matrix, camera)
     }
 
     pub fn push(&mut self, index: usize, value: Vec2<isize>) {

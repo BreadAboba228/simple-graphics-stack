@@ -1,7 +1,6 @@
 use minifb::{Window, WindowOptions};
 
 use simple_3d::{camera::Camera, scene::Scene};
-use simple_render::color::Color;
 
 use simple_render::render::buffer::BufferSize;
 
@@ -28,7 +27,7 @@ fn main() {
 
     let scene = Scene::new(vec![cube1.create(), cube2.create()], camera);
 
-    let engine = Engine::new(scene, Color::WHITE, &angles, size);
+    let engine = Engine::new(scene, &angles, size);
 
     engine.run(120.0, window);
 }

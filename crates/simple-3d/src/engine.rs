@@ -4,13 +4,12 @@ use minifb::{Key, Window};
 use simple_linear_algebra::{num_traits::Zero, vector::{Axis, Vector, quaternion::Quaternion, vec2::Vec2, vec3::Vec3}};
 use simple_render::{color::Color, render::{Mouse, Render, app_handler::{AppHandler, Event}, buffer::BufferSize, wait}};
 
-use crate::{engine::render_cache::RenderCache, scene::Scene, shape::AngleUnit};
+use crate::{engine::render_cache::{RenderCache, TriangleCache}, scene::Scene, shape::AngleUnit};
 
 pub mod render_cache;
 
 pub struct Engine {
     scene: Scene,
-    color: Color,
     quater: Quaternion<f64>,
     render_cache: RenderCache,
     need_to_redraw: bool,
@@ -20,7 +19,6 @@ pub struct Engine {
 impl Engine {
     pub fn new(
         scene: Scene,
-        color: Color,
         angles: &[AngleUnit],
         size: BufferSize
     ) -> Self {
@@ -32,7 +30,7 @@ impl Engine {
 
         let mouse_pos = None;
 
-        Self { scene, color, quater, render_cache, need_to_redraw, mouse_pos }
+        Self { scene, quater, render_cache, need_to_redraw, mouse_pos }
     }
 
     pub fn event_loop(&mut self) {
@@ -112,21 +110,31 @@ impl AppHandler for Engine {
 
                         self.render_cache.push(index, vertex2);
                     }
+
+                    for triangle in shape.triangles() {
+                        let vertexes = shape.vertexes();
+
+                        let middle_z = Vec3 { x: vertexes[triangle.0.x], y: vertexes[triangle.0.y], z: vertexes[triangle.0.z] }.middle_z();
+
+                        self.render_cache.triangles_cache.push((TriangleCache { shape_index: index, triangle: *triangle }, middle_z));
+                    }
                 }
 
                 buffer.fill(Color::new(0));
 
-                for (index, shape) in self.scene.shapes().iter().enumerate() {
-                    for edge in shape.edges() {
-                        let start = self.render_cache.get(index, edge.0);
+                self.render_cache.triangles_cache.sort_unstable_by(|a, b| a.1.total_cmp(&b.1));
 
-                        let end = self.render_cache.get(index, edge.1);
+                for (cache, _) in self.render_cache.triangles_cache.iter().rev() {
+                    let x = self.render_cache.get(cache.shape_index, cache.triangle.0.x);
 
-                        //TODO: replace isize with usize in draw_line
-                        buffer.accuracy_draw_line(start, end, self.color);
-                    }
+                    let y = self.render_cache.get(cache.shape_index, cache.triangle.0.y);
+
+                    let z = self.render_cache.get(cache.shape_index, cache.triangle.0.z);
+
+                    buffer.fill_triangle(Vec3 { x, y, z }, cache.triangle.1);
                 }
 
+                self.render_cache.triangles_cache.clear();
                 self.render_cache.clear();
             },
 
@@ -216,5 +224,15 @@ impl AppHandler for Engine {
 
     fn need_to_redraw(&self) -> bool {
         self.need_to_redraw
+    }
+}
+
+pub trait Triangle {
+    fn middle_z(&self) -> f64;
+}
+
+impl Triangle for Vec3<Vec3<f64>> {
+    fn middle_z(&self) -> f64 {
+        (self.x.z + self.y.z + self.z.z) / 3.0
     }
 }

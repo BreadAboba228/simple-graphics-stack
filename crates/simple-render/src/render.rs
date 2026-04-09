@@ -7,6 +7,7 @@ use crate::{color::Color, render::{app_handler::{AppHandler, Event}, buffer::{Bu
 pub mod buffer;
 pub mod app_handler;
 pub mod image;
+pub mod shader;
 
 pub fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));

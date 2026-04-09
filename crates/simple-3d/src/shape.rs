@@ -1,6 +1,7 @@
 use std::ops::Mul;
 
 use simple_linear_algebra::{matrix::{Unit, matrix4::Matrix4}, vector::{Axis, Vector, quaternion::Quaternion, vec3::Vec3}};
+use simple_render::color::Color;
 
 pub mod cube;
 
@@ -35,21 +36,21 @@ impl AngleUnit {
 #[derive(Clone)]
 pub struct Shape {
     vertexes: Vec<Vec3<f64>>,
-    edges: Vec<EdgeUnit>,
+    triangles: Vec<(Vec3<usize>, Color)>,
     center: Vec3<f64>
 }
 
 impl Shape {
     pub const fn new(
         vertexes: Vec<Vec3<f64>>,
-        edges:  Vec<EdgeUnit>,
+        triangles:  Vec<(Vec3<usize>, Color)>,
         center: Vec3<f64>
     ) -> Self {
-        Self { vertexes, edges, center }
+        Self { vertexes, triangles, center }
     }
 
-    pub fn edges(&self) -> &[EdgeUnit] {
-        &self.edges
+    pub fn triangles(&self) -> &[(Vec3<usize>, Color)] {
+        &self.triangles
     }
 
     pub fn vertexes(&self) -> &[Vec3<f64>] {

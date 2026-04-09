@@ -1,6 +1,7 @@
 use simple_linear_algebra::vector::vec3::Vec3;
+use simple_render::color::Color;
 
-use crate::shape::{EdgeUnit, Shape};
+use crate::shape::Shape;
 
 #[derive(Clone)]
 pub struct Cube {
@@ -30,13 +31,16 @@ impl Cube {
             Vec3::new(x_2, y_2, z_1), Vec3::new(x_2, y_2, z_2)
         ];
 
-        let edges: Vec<EdgeUnit> = vec![
-            EdgeUnit(0, 1), EdgeUnit(0, 2), EdgeUnit(0, 4),
-            EdgeUnit(1, 3), EdgeUnit(1, 5), EdgeUnit(2, 3),
-            EdgeUnit(2, 6), EdgeUnit(3, 7), EdgeUnit(4, 5),
-            EdgeUnit(4, 6), EdgeUnit(5, 7), EdgeUnit(6, 7)
+        let triangles = vec![
+            (Vec3 { x: 0, y: 2, z: 6 }, Color::BLUE), (Vec3 { x: 0, y: 6, z: 4 }, Color::BLUE),
+            (Vec3 { x: 2, y: 3, z: 7 }, Color::RED), (Vec3 { x: 2, y: 7, z: 6 }, Color::RED),
+            (Vec3 { x: 4, y: 6, z: 7 }, Color::GREEN), (Vec3 { x: 4, y: 7, z: 5 }, Color::GREEN),
+
+            (Vec3 { x: 3, y: 5, z: 7 }, Color::BLUE), (Vec3 { x: 3, y: 1, z: 5 }, Color::BLUE),
+            (Vec3 { x: 1, y: 0, z: 4 }, Color::RED), (Vec3 { x: 1, y: 4, z: 5 }, Color::RED),
+            (Vec3 { x: 2, y: 0, z: 1 }, Color::GREEN), (Vec3 { x: 2, y: 1, z: 3 }, Color::GREEN),
         ];
 
-        Shape::new(vertexes, edges, self.center)
+        Shape::new(vertexes, triangles, self.center)
     }
 }
