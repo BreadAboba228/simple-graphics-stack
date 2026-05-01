@@ -1,17 +1,21 @@
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, thread};
 
 use minifb::Window;
 use simple_linear_algebra::vector::vec2::Vec2;
 use simple_render::{color::Color, render::{Render, app_handler::{AppHandler, Event}}};
 
+use crate::parser::{Lexer, Parser};
+
 pub struct Builder {
-    func: fn(isize) -> isize,
+    func: Box<dyn Fn(isize) -> isize>,
     color: Color,
     need_to_redraw: bool
 }
 
+pub mod parser;
+
 impl Builder {
-    pub fn new(func: fn(isize) -> isize, color: Color) -> Self {
+    pub fn new(func: Box<dyn Fn(isize) -> isize>, color: Color) -> Self {
         Self { func, color, need_to_redraw: true }
     }
 
@@ -19,13 +23,49 @@ impl Builder {
 
         let clone = Arc::new(Mutex::new(self));
 
+        let clone2 = clone.clone();
+
         let mut render = Render::new(clone, fps, window);
 
         render.run();
+
+        let _handle = thread::spawn(||
+            loop {
+                let mut str = String::new();
+
+                std::io::stdin()
+                    .read_line(&mut str)
+                    .unwrap();
+
+                let mut lexer = Lexer::new(&str);
+
+                let tokens = match lexer.tokenize() {
+                    Ok(tokens) => tokens,
+
+                    Err(e) => {
+                        println!("{:?}", e);
+                        continue;
+                    }
+                };
+
+                let mut parser = Parser::new(&tokens);
+
+                let expr = match parser.parse() {
+                    Ok(expr) => expr,
+
+                    Err(e) => {
+                        println!("{:?}", e);
+                        continue;
+                    }
+                };
+
+                (clone2.lock().unwrap().func) = move |x: isize| expr.eval(x as f64) as isize;
+            }
+        );
     }
 }
 
-impl AppHandler for Builder {
+impl<F: Fn(isize) -> isize> AppHandler for Builder<F> {
     fn event(&mut self, event: Event) {
         match event {
             Event::RedrawReqiest { buffer } => {
