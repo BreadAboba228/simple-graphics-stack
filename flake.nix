@@ -47,6 +47,11 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         src = craneLib.cleanCargoSource ./.;
 
+        dynamicLibs = with pkgs; [
+          xorg.libX11
+          xorg.libXcursor
+        ];
+
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
           inherit src;
@@ -55,6 +60,7 @@
           buildInputs = [
             # Add additional build inputs here
           ]
+          ++ dynamicLibs
           ++ lib.optionals pkgs.stdenv.isDarwin [
             # Additional darwin specific inputs can be set here
             pkgs.libiconv
@@ -155,12 +161,10 @@
 
           nativeBuildInputs = [ rustToolchain ];
 
-          shellHook = ''
-            fish
-          '';
-
           # Additional dev-shell environment variables can be set directly
           # MY_CUSTOM_DEVELOPMENT_VAR = "something else";
+
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath dynamicLibs;
 
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [

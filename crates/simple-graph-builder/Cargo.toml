@@ -1,9 +1,0 @@
-[package]
-name = "simple-graph-builder"
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-minifb.workspace = true
-simple-render = { path = "../simple-render" }
-simple-linear-algebra = { path = "../simple-linear-algebra" }
